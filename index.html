@@ -95,6 +95,45 @@
   }
   .start-btn:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(28,26,23,.4)}
   .start-btn:active{transform:translateY(0)}
+  .ghost-btn{
+    width:100%;margin-top:11px;padding:13px;border-radius:13px;
+    background:#fff;border:1.5px solid var(--line);color:var(--ink);
+    font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;
+    transition:transform .12s,border-color .12s;position:relative;z-index:1;
+  }
+  .ghost-btn:hover{transform:translateY(-2px);border-color:var(--gold)}
+  /* ---- PESTAÑA APRENDIDAS ---- */
+  .lw-tabs{display:flex;gap:8px;margin:14px 0 12px;position:relative;z-index:1}
+  .lw-tab{
+    flex:1;padding:11px;border-radius:11px;border:1.5px solid var(--line);background:#fff;
+    font-family:inherit;font-size:14px;font-weight:700;color:#7a6e57;cursor:pointer;
+    transition:all .14s ease;
+  }
+  .lw-tab span{display:inline-block;min-width:20px;margin-left:4px;font-size:12px;
+    background:#f0e6cd;color:#8a7c60;border-radius:20px;padding:1px 7px}
+  .lw-tab:hover{border-color:var(--gold)}
+  .lw-tab.active{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+  .lw-tab.active span{background:rgba(255,255,255,.22);color:#fff}
+  .lw-search{
+    width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:11px;
+    font-family:inherit;font-size:15px;color:var(--ink);background:#fff;margin-bottom:14px;
+    position:relative;z-index:1;
+  }
+  .lw-search:focus{outline:none;border-color:var(--gold)}
+  .learned-head{font-size:18px;font-weight:800;margin:14px 0 14px;position:relative;z-index:1}
+  .learned-head span#learnedTotal{color:var(--green);font-size:24px}
+  .learned-sub{font-size:13px;font-weight:400;color:#9a8b6c;font-style:italic;margin-left:4px}
+  .learned-list{display:flex;flex-direction:column;gap:8px;position:relative;z-index:1;max-height:60vh;overflow-y:auto;padding-right:2px}
+  .lw{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 14px;
+  }
+  .lw-main{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .lw-de{font-weight:700;color:var(--accent);font-size:16px}
+  .lw-es{font-size:13px;color:#7a6e57}
+  .lw-ivl{flex:0 0 auto;font-size:11px;font-weight:700;color:var(--green);background:var(--green-soft);padding:4px 10px;border-radius:20px}
+  .lw-ivl.prog{color:#a9750f;background:#fbf0d6}
+  .learned-empty{font-size:14px;color:#7a6e57;line-height:1.5;text-align:center;padding:30px 14px;position:relative;z-index:1}
 
   /* ---- GAME SCREEN ---- */
   .topbar{
@@ -234,6 +273,17 @@
   .prompt .tag{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px}
   .prompt .word{font-size:38px;font-weight:800;color:var(--accent);line-height:1.05;letter-spacing:-.01em}
   .prompt .pos{display:inline-block;margin-top:10px;font-size:12px;color:#8a7c60;font-style:italic;background:#f0e6cd;padding:3px 12px;border-radius:20px}
+  .newbadge{display:inline-block;margin-top:10px;margin-left:6px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#2a5b7a;background:#dceaf2;padding:3px 12px;border-radius:20px}
+  /* franja de stats en el menú */
+  .stat-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 22px;position:relative;z-index:1}
+  .stat-strip .ss{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 8px;text-align:center}
+  .stat-strip .ss-n{font-size:24px;font-weight:800;color:var(--accent);line-height:1}
+  .stat-strip .ss-l{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#9a8b6c;margin-top:5px}
+  /* estado "todo al día" */
+  .all-done{text-align:center;padding:18px 10px 6px;position:relative;z-index:1}
+  .all-done .ad-emoji{font-size:48px}
+  .all-done .ad-title{font-size:24px;font-weight:800;margin:6px 0}
+  .all-done .ad-text{font-size:14px;color:#7a6e57;line-height:1.5;max-width:420px;margin:0 auto 18px}
 
   .answers{display:grid;gap:11px;position:relative;z-index:1}
   .ans{
@@ -298,32 +348,13 @@
   <header class="top">
     <div class="kicker">Vokabeltrainer · Deutsch A1</div>
     <h1><span class="de">Wort</span>spiel</h1>
-    <div class="sub">Adivina la traducción · 723 palabras</div>
+    <div class="sub">Repaso espaciado · 723 palabras</div>
   </header>
 
   <!-- SETUP -->
   <section id="setup" class="panel setup">
-    <h2>Configura tu partida</h2>
-    <p class="lead">Elige qué palabras quieres practicar y cuántas preguntas.</p>
-
-    <div class="resume-banner hidden" id="resumeBanner">
-      <div class="resume-text">
-        <b>Tienes una sesión sin terminar</b>
-        <span id="resumeInfo"></span>
-      </div>
-      <div class="resume-actions">
-        <button id="resumeBtn" class="resume-go">Continuar</button>
-        <button id="discardBtn" class="resume-x" title="Descartar">✕</button>
-      </div>
-    </div>
-
-    <div class="field">
-      <label>Modo de estudio</label>
-      <div class="opt-row" id="mode">
-        <button class="chip active" data-mode="cards">Flashcards (Anki)<small>te autoevalúas</small></button>
-        <button class="chip" data-mode="quiz">Quiz<small>opción múltiple</small></button>
-      </div>
-    </div>
+    <h2>Estudio continuo</h2>
+    <p class="lead">Sin límite de preguntas. Las palabras vuelven solas según tu nota: lo difícil pronto, lo fácil más adelante.</p>
 
     <div class="field">
       <label>Dirección</label>
@@ -333,39 +364,41 @@
       </div>
     </div>
 
-    <div class="field">
-      <label>Número de preguntas</label>
-      <div class="opt-row" id="count">
-        <button class="chip active" data-count="10">10</button>
-        <button class="chip" data-count="20">20</button>
-        <button class="chip" data-count="30">30</button>
-        <button class="chip" data-count="50">50</button>
-      </div>
+    <div class="stat-strip" id="statStrip">
+      <div class="ss"><div class="ss-n" id="ssDue">0</div><div class="ss-l">Pendientes ahora</div></div>
+      <div class="ss"><div class="ss-n" id="ssLearned">0</div><div class="ss-l">Aprendidas</div></div>
+      <div class="ss"><div class="ss-n" id="ssNew">0</div><div class="ss-l">Nuevas por ver</div></div>
     </div>
 
-    <div class="field">
-      <label>Rango de palabras (por número de lista)</label>
-      <div class="range-grid" id="range"></div>
-    </div>
-
-    <button class="start-btn" id="startBtn">Empezar a jugar</button>
+    <button class="start-btn" id="startBtn">Empezar a estudiar</button>
+    <button class="ghost-btn" id="learnedBtn">Ver palabras aprendidas</button>
 
     <div class="review-box hidden" id="reviewBox">
-      <div class="due-line hidden" id="dueLine">
-        <div class="review-head"><span id="dueCount">0</span> tarjetas pendientes hoy</div>
-        <button class="review-btn" id="dueBtn">Repasar tarjetas pendientes</button>
-      </div>
-      <div class="mis-line hidden" id="misLine">
-        <div class="review-head">
-          <span id="reviewCount">0</span> errores del quiz
-          <button class="clear-link" id="clearReview">borrar</button>
-        </div>
-        <button class="review-btn alt" id="reviewBtn">Repasar errores del quiz</button>
+      <div class="review-head">Tu progreso se guarda solo en este navegador.
+        <button class="clear-link" id="clearAll">reiniciar todo</button>
       </div>
     </div>
   </section>
 
-  <!-- GAME -->
+  <!-- APRENDIDAS (pestaña) -->
+  <section id="learned" class="panel hidden">
+    <div class="topbar">
+      <button class="exit-btn" id="learnedBack" title="Volver">⟵ Menú</button>
+      <div class="mode-tag">Mis palabras</div>
+    </div>
+
+    <div class="lw-tabs" id="lwTabs">
+      <button class="lw-tab active" data-tab="learned">Aprendidas <span id="cntLearned">0</span></button>
+      <button class="lw-tab" data-tab="progress">En progreso <span id="cntProgress">0</span></button>
+    </div>
+
+    <input type="search" id="lwSearch" class="lw-search" placeholder="Buscar palabra (alemán o español)…" autocomplete="off">
+
+    <div class="learned-list" id="learnedList"></div>
+    <div class="learned-empty hidden" id="learnedEmpty"></div>
+  </section>
+
+  <!-- GAME (estudio continuo) -->
   <section id="game" class="panel hidden">
     <div class="topbar">
       <button class="exit-btn" id="exitBtn" title="Volver al menú">⟵ Menú</button>
@@ -376,30 +409,22 @@
     </div>
 
     <div class="hud">
-      <div class="stat score"><div class="num" id="hudScore">0</div><div class="lab">Puntos</div></div>
-      <div class="stat prog"><div class="num" id="hudProg">1 / 10</div><div class="lab">Pregunta</div></div>
-      <div class="stat streak"><div class="num" id="hudStreak">0</div><div class="lab">Racha</div></div>
+      <div class="stat score"><div class="num" id="hudLearned">0</div><div class="lab">Aprendidas</div></div>
+      <div class="stat prog"><div class="num" id="hudSession">0</div><div class="lab">Vistas hoy</div></div>
+      <div class="stat streak"><div class="num" id="hudDue">0</div><div class="lab">En cola</div></div>
     </div>
-    <div class="progbar"><i id="progFill"></i></div>
-    <div class="dots" id="dots"></div>
 
     <div class="prompt">
       <div class="tag" id="promptTag">Traduce</div>
       <div class="word" id="promptWord">—</div>
       <span class="pos hidden" id="promptPos"></span>
+      <span class="newbadge hidden" id="newBadge">palabra nueva</span>
     </div>
 
     <!-- FLASHCARD back (Anki) -->
     <div class="card-back hidden" id="cardBack">
       <div class="back-divider"></div>
       <div class="back-answer" id="backAnswer">—</div>
-    </div>
-
-    <!-- QUIZ answers -->
-    <div class="answers" id="answers"></div>
-
-    <div class="next-area">
-      <div class="feedback hidden" id="feedback"></div>
     </div>
 
     <!-- FLASHCARD controls -->
@@ -411,30 +436,12 @@
       <button class="rate easy"  data-rate="easy"><b>Fácil</b><small id="iEasy">4 días</small></button>
     </div>
 
-    <div class="navbar">
-      <button class="nav-btn" id="prevBtn">← Atrás</button>
-      <button class="nav-btn primary" id="nextBtn">Siguiente →</button>
-    </div>
-  </section>
-
-  <!-- RESULTS -->
-  <section id="results" class="panel hidden">
-    <div class="results">
-      <div class="trophy" id="trophy">🏆</div>
-      <h2 id="resTitle">¡Terminaste!</h2>
-      <div class="grade" id="resGrade"></div>
-      <div class="scoreline"><span id="resCorrect">0</span><span> / <span id="resTotal">0</span></span></div>
-      <div class="pct" id="resPct">0% de aciertos</div>
-      <div class="mini-stats">
-        <div class="ms g"><div class="n" id="msCorrect">0</div><div class="l">Aciertos</div></div>
-        <div class="ms b"><div class="n" id="msWrong">0</div><div class="l">Fallos</div></div>
-        <div class="ms s"><div class="n" id="msStreak">0</div><div class="l">Mejor racha</div></div>
-      </div>
-      <div class="row">
-        <button class="btn-again" id="againBtn">Jugar otra vez</button>
-        <button class="btn-menu" id="menuBtn">Cambiar ajustes</button>
-      </div>
-      <button class="review-btn full hidden" id="resReviewBtn">Repasar los errores de esta partida</button>
+    <!-- estado cuando no hay nada pendiente -->
+    <div class="all-done hidden" id="allDone">
+      <div class="ad-emoji">✅</div>
+      <div class="ad-title">¡Todo al día!</div>
+      <div class="ad-text" id="adText">No hay palabras pendientes ahora mismo. Vuelve más tarde o sigue con palabras nuevas.</div>
+      <button class="reveal-btn" id="moreNewBtn">Ver más palabras nuevas</button>
     </div>
   </section>
 
@@ -457,13 +464,12 @@ const WORDS = RAW.map((r,i)=>{
 });
 
 /* ===== STATE ===== */
-let cfg = {mode:"cards", dir:"de-es", count:10, range:"all"};
-// quiz entry:  {word, options:[...], correct, picked:null}
-// card entry:  {word, revealed:bool, rating:null}
-let deck=[], idx=0, isReview=false;
+let cfg = {dir:"de-es"};
+let current = null;      // {word, revealed}
+let sessionSeen = new Set(); // palabras vistas en esta sesión (para "Vistas hoy")
 
 /* ===== SETTINGS (recordar ajustes) ===== */
-const CFG_KEY = "wortspiel_cfg_v1";
+const CFG_KEY = "wortspiel_cfg_v2";
 function loadCfg(){
   try{
     const saved = JSON.parse(localStorage.getItem(CFG_KEY));
@@ -472,44 +478,6 @@ function loadCfg(){
 }
 function saveCfg(){
   try{ localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); flashSaved(); }catch(e){}
-}
-
-/* ===== SESSION (guardar avance) ===== */
-const SESSION_KEY = "wortspiel_session_v1";
-function saveSession(){
-  if(!deck.length) return;
-  // guardamos solo lo esencial: nº de palabra + estado, no las funciones
-  const slim = deck.map(e=>{
-    if(cfg.mode==="cards") return {n:e.word.n, revealed:!!e.revealed, rating:e.rating||null};
-    return {n:e.word.n, options:e.options, correct:e.correct, picked:e.picked};
-  });
-  const data = {mode:cfg.mode, dir:cfg.dir, idx, isReview, deck:slim, ts:Date.now()};
-  try{ localStorage.setItem(SESSION_KEY, JSON.stringify(data)); flashSaved(); }catch(e){}
-}
-function loadSession(){
-  try{ return JSON.parse(localStorage.getItem(SESSION_KEY)); }catch(e){ return null; }
-}
-function clearSession(){
-  try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
-}
-function resumeSession(){
-  const s = loadSession();
-  if(!s || !s.deck || !s.deck.length) return false;
-  cfg.mode = s.mode; cfg.dir = s.dir; isReview = !!s.isReview; idx = s.idx||0;
-  const byN = {};
-  WORDS.forEach(w=>byN[w.n]=w);
-  deck = s.deck.map(d=>{
-    const word = byN[d.n];
-    if(cfg.mode==="cards") return {word, revealed:!!d.revealed, rating:d.rating||null};
-    return {word, options:d.options, correct:d.correct, picked:d.picked};
-  }).filter(e=>e.word);
-  if(!deck.length) return false;
-  $("#setup").classList.add("hidden");
-  $("#results").classList.add("hidden");
-  $("#game").classList.remove("hidden");
-  $("#modeTag").textContent = (cfg.mode==="cards"?"Flashcards · ":"Quiz · ")+"Sesión retomada";
-  render();
-  return true;
 }
 
 /* ===== INDICADOR DE GUARDADO ===== */
@@ -522,25 +490,9 @@ function flashSaved(){
   savedTimer = setTimeout(()=>el.classList.remove("show"), 1400);
 }
 
-/* ===== PERSISTENT MISTAKES (quiz) ===== */
-const STORE_KEY = "wortspiel_errores_v1";
-function loadMistakes(){
-  try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
-  catch(e){ return []; }
-}
-function saveMistakes(arr){
-  try{ localStorage.setItem(STORE_KEY, JSON.stringify(arr)); }catch(e){}
-}
-function addMistake(n){
-  const m = loadMistakes();
-  if(!m.includes(n)){ m.push(n); saveMistakes(m); }
-}
-function removeMistake(n){
-  saveMistakes(loadMistakes().filter(x=>x!==n));
-}
-
-/* ===== SPACED REPETITION (flashcards) ===== */
+/* ===== SPACED REPETITION (motor continuo) ===== */
 // sched = { [n]: {ivl: días, due: timestamp, ease: factor, reps:int} }
+// que una palabra TENGA entrada = ya fue introducida (vista al menos una vez)
 const SCHED_KEY = "wortspiel_srs_v1";
 const DAY = 86400000;
 function loadSched(){
@@ -550,26 +502,40 @@ function loadSched(){
 function saveSched(s){
   try{ localStorage.setItem(SCHED_KEY, JSON.stringify(s)); }catch(e){}
 }
-// devuelve las palabras (n) que tocan repasar hoy o antes
-function dueCards(){
+
+// palabras introducidas cuyo "due" ya venció
+function dueList(){
   const s = loadSched();
   const now = Date.now();
   return Object.keys(s).filter(n=> s[n].due <= now).map(Number);
 }
-// aplica una nota a una palabra y guarda el próximo intervalo
+// palabras ya "aprendidas" (2+ repasos y próximo repaso de al menos 1 día)
+function isLearned(c){ return c && c.reps>=2 && c.ivl>=1; }
+function learnedWords(){
+  const s = loadSched();
+  return Object.keys(s).filter(n=> isLearned(s[n])).map(Number)
+    .sort((a,b)=> s[b].ivl - s[a].ivl); // las más afianzadas primero
+}
+function learnedCount(){ return learnedWords().length; }
+// nuevas que quedan por ver (de todo el vocabulario)
+function newRemaining(){
+  const s = loadSched();
+  return WORDS.filter(w=> !(w.n in s)).length;
+}
+
 function applyRating(n, rating){
   const s = loadSched();
   let c = s[n] || {ivl:0, ease:2.3, reps:0, due:Date.now()};
   if(rating==="again"){
-    c.ivl = 0;            // vuelve dentro de la misma sesión
+    c.ivl = 0;
     c.ease = Math.max(1.3, c.ease - 0.2);
     c.reps = 0;
-    c.due = Date.now() + 60000; // ~1 min
+    c.due = Date.now() + 60000;          // ~1 min
   }else if(rating==="hard"){
-    c.ivl = c.ivl < 1 ? 1 : Math.max(1, Math.round(c.ivl * 1.2));
+    c.ivl = c.ivl < 1 ? 0 : Math.max(1, Math.round(c.ivl * 1.2));
     c.ease = Math.max(1.3, c.ease - 0.15);
     c.reps += 1;
-    c.due = Date.now() + (c.ivl<1 ? 600000 : c.ivl*DAY); // ~10 min si nuevo
+    c.due = Date.now() + (c.ivl<1 ? 600000 : c.ivl*DAY); // ~10 min si aún nueva
   }else if(rating==="good"){
     c.ivl = c.reps===0 ? 1 : Math.round(Math.max(1,c.ivl) * c.ease);
     c.reps += 1;
@@ -583,7 +549,6 @@ function applyRating(n, rating){
   s[n] = c;
   saveSched(s);
 }
-// texto del intervalo previsto para mostrar en los botones (sin guardar)
 function previewInterval(n, rating){
   const s = loadSched();
   const c = s[n] || {ivl:0, ease:2.3, reps:0};
@@ -602,26 +567,22 @@ function previewInterval(n, rating){
   }
   return "";
 }
+// marca que la palabra ya existe en el calendario (introducida) sin cambiar su due
+function ensureIntroduced(n){
+  const s = loadSched();
+  if(!(n in s)){ s[n] = {ivl:0, ease:2.3, reps:0, due:Date.now()}; saveSched(s); }
+}
 
 /* ===== HELPERS ===== */
 const $ = s=>document.querySelector(s);
 const shuffle = a=>{for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
 function cleanDe(de){ return de.replace(/\s*\([^)]*\)\s*/g,'').trim(); }
+const wordByN = {}; WORDS.forEach(w=>wordByN[w.n]=w);
+
+/* ===== POOL ===== */
+function allPool(){ return WORDS.slice(); }
 
 /* ===== SETUP UI ===== */
-function buildRanges(){
-  const grid = $("#range");
-  const total = WORDS.length;
-  const ranges = [{key:"all",label:"Todas",sub:"1–"+total}];
-  for(let s=1; s<=total; s+=100){
-    const e = Math.min(s+99,total);
-    ranges.push({key:s+"-"+e,label:s+"–"+e,sub:(e-s+1)+" palabras"});
-  }
-  grid.innerHTML = ranges.map((r,i)=>
-    `<button class="chip ${i===0?'active':''}" data-range="${r.key}">${r.label}<small>${r.sub}</small></button>`
-  ).join("");
-}
-
 function wireChips(containerId, key){
   document.querySelectorAll("#"+containerId+" .chip").forEach(btn=>{
     btn.addEventListener("click",()=>{
@@ -629,218 +590,68 @@ function wireChips(containerId, key){
       btn.classList.add("active");
       const d = btn.dataset;
       if(key==="dir") cfg.dir = d.dir;
-      if(key==="count") cfg.count = +d.count;
-      if(key==="range") cfg.range = d.range;
-      if(key==="mode"){ cfg.mode = d.mode; updateStartLabel(); }
       saveCfg();
+      refreshStats();
     });
   });
 }
-
-// marca el chip activo según cfg (al cargar ajustes guardados)
 function applyCfgToChips(){
-  const set=(id,attr,val)=>{
-    document.querySelectorAll("#"+id+" .chip").forEach(b=>{
-      b.classList.toggle("active", b.dataset[attr]===String(val));
-    });
-  };
-  set("mode","mode",cfg.mode);
-  set("dir","dir",cfg.dir);
-  set("count","count",cfg.count);
-  set("range","range",cfg.range);
+  document.querySelectorAll("#dir .chip").forEach(b=>{
+    b.classList.toggle("active", b.dataset.dir===cfg.dir);
+  });
+}
+function refreshStats(){
+  $("#ssDue").textContent = dueList().length;
+  $("#ssLearned").textContent = learnedCount();
+  $("#ssNew").textContent = newRemaining();
 }
 
-function updateStartLabel(){
-  $("#startBtn").textContent = cfg.mode==="cards" ? "Empezar repaso" : "Empezar quiz";
-}
-
-function refreshReviewBox(){
-  const due = dueCards();
-  const mistakes = loadMistakes();
-  const box = $("#reviewBox");
-  if(due.length===0 && mistakes.length===0){ box.classList.add("hidden"); return; }
-  box.classList.remove("hidden");
-
-  // tarjetas pendientes (SRS)
-  const dueWrap = $("#dueLine");
-  if(due.length>0){
-    dueWrap.classList.remove("hidden");
-    $("#dueCount").textContent = due.length;
-  }else dueWrap.classList.add("hidden");
-
-  // errores del quiz
-  const misWrap = $("#misLine");
-  if(mistakes.length>0){
-    misWrap.classList.remove("hidden");
-    $("#reviewCount").textContent = mistakes.length;
-  }else misWrap.classList.add("hidden");
-}
-
-/* ===== POOL & DECK BUILD ===== */
-function poolForRange(){
-  if(cfg.range==="all") return WORDS.slice();
-  const [s,e] = cfg.range.split("-").map(Number);
-  return WORDS.filter(w=>w.n>=s && w.n<=e);
-}
-
-function buildQuizEntry(word, pool){
-  const askDe = cfg.dir==="de-es";
-  const correct = askDe ? word.es : cleanDe(word.de);
-  const others = shuffle(pool.filter(w=>w.n!==word.n))
-      .map(w=> askDe ? w.es : cleanDe(w.de))
-      .filter(t=>t!==correct);
-  const uniq = [];
-  for(const o of others){ if(!uniq.includes(o)) uniq.push(o); if(uniq.length>=3) break; }
-  const options = shuffle([correct, ...uniq]);
-  return {word, options, correct, picked:null};
-}
-function buildCardEntry(word){
-  return {word, revealed:false, rating:null};
-}
-
-/* ===== START MODES ===== */
-function startGame(){
-  isReview=false;
-  const pool = poolForRange();
-  const n = Math.min(cfg.count, pool.length);
-  const chosen = shuffle(pool.slice()).slice(0,n);
-  deck = (cfg.mode==="cards")
-    ? chosen.map(buildCardEntry)
-    : chosen.map(w=>buildQuizEntry(w, pool));
-  beginDeck("Práctica");
-}
-
-// repaso de errores del quiz (opción múltiple)
-function startQuizReview(nums){
-  isReview=true;
-  cfg.mode="quiz";
-  const pool = WORDS.slice();
-  const chosen = WORDS.filter(w=>nums.includes(w.n));
-  if(chosen.length===0) return;
-  deck = shuffle(chosen.map(w=>buildQuizEntry(w, pool)));
-  beginDeck("Repaso de errores");
-}
-
-// repaso de tarjetas pendientes (flashcards / SRS)
-function startCardReview(nums){
-  isReview=true;
-  cfg.mode="cards";
-  const chosen = WORDS.filter(w=>nums.includes(w.n));
-  if(chosen.length===0) return;
-  deck = shuffle(chosen.map(buildCardEntry));
-  beginDeck("Tarjetas pendientes");
-}
-
-function beginDeck(tag){
-  idx=0;
-  $("#setup").classList.add("hidden");
-  $("#results").classList.add("hidden");
-  $("#game").classList.remove("hidden");
-  $("#modeTag").textContent = (cfg.mode==="cards"?"Flashcards · ":"Quiz · ")+tag;
-  render();
-  saveSession();
-}
-
-/* ===== SCORE (quiz) ===== */
-function computeScore(){
-  let score=0, streak=0, best=0, correct=0, wrong=0;
-  for(const e of deck){
-    if(e.picked===undefined || e.picked===null) continue;
-    if(e.picked===e.correct){ score += 10 + streak*2; streak++; best=Math.max(best,streak); correct++; }
-    else { streak=0; wrong++; }
+/* ===== MOTOR: elegir la próxima palabra ===== */
+// prioridad: 1) la más vencida (due más antiguo) entre las introducidas
+//            2) una palabra nueva del rango elegido
+function pickNext(){
+  const s = loadSched();
+  const now = Date.now();
+  // 1) pendientes vencidas, la más atrasada primero
+  const due = Object.keys(s)
+    .filter(n=> s[n].due <= now)
+    .map(Number)
+    .sort((a,b)=> s[a].due - s[b].due);
+  if(due.length){
+    return {word: wordByN[due[0]], revealed:false, isNew:false};
   }
-  return {score, best, correct, wrong, streak};
+  // 2) palabra nueva del rango (en orden de lista para "aprender completas")
+  const fresh = allPool().filter(w=> !(w.n in s));
+  if(fresh.length){
+    return {word: fresh[0], revealed:false, isNew:true};
+  }
+  return null; // nada pendiente ni nuevo
 }
 
-/* ===== DOTS ===== */
-function renderDots(){
-  const wrap = $("#dots");
-  const isCards = cfg.mode==="cards";
-  wrap.innerHTML = deck.map((e,i)=>{
-    let cls="dot";
-    if(isCards){
-      if(e.rating==="again"||e.rating==="hard") cls+=" wrong";
-      else if(e.rating==="good"||e.rating==="easy") cls+=" correct";
-    }else{
-      if(e.picked!==null && e.picked!==undefined) cls += (e.picked===e.correct?" correct":" wrong");
-    }
-    if(i===idx) cls += " current";
-    return `<button class="${cls}" data-i="${i}" title="Tarjeta ${i+1}"></button>`;
-  }).join("");
-  Array.from(wrap.children).forEach(d=>{
-    d.addEventListener("click",()=>{ idx=+d.dataset.i; render(); });
-  });
+/* ===== FLUJO ===== */
+function startStudy(){
+  $("#setup").classList.add("hidden");
+  $("#game").classList.remove("hidden");
+  $("#modeTag").textContent = "Estudio continuo";
+  nextCard();
 }
 
-/* ===== RENDER DISPATCH ===== */
-function render(){
-  if(cfg.mode==="cards") renderCard();
-  else renderQuiz();
+function nextCard(){
+  current = pickNext();
+  if(!current){
+    showAllDone();
+    return;
+  }
+  renderCard();
 }
 
-/* ---- QUIZ ---- */
-function renderQuiz(){
-  // mostrar elementos quiz, ocultar flashcard
-  $("#answers").classList.remove("hidden");
-  $("#revealBtn").classList.add("hidden");
-  $("#rateRow").classList.add("hidden");
-  $("#cardBack").classList.add("hidden");
-
-  const e = deck[idx];
-  const q = e.word;
-  const askDe = cfg.dir==="de-es";
-  const answered = e.picked!==null;
-
-  $("#promptTag").textContent = askDe ? "¿Qué significa en español?" : "¿Cómo se dice en alemán?";
-  $("#promptWord").textContent = askDe ? cleanDe(q.de) : q.es;
-
-  const posEl = $("#promptPos");
-  if(askDe && q.pos){ posEl.textContent = q.pos; posEl.classList.remove("hidden"); }
-  else posEl.classList.add("hidden");
-
-  const wrap = $("#answers");
-  wrap.innerHTML = e.options.map(o=>`<button class="ans">${o}</button>`).join("");
-  Array.from(wrap.children).forEach(btn=>{
-    const txt = btn.textContent;
-    if(answered){
-      btn.disabled = true;
-      if(txt===e.correct){ btn.classList.add("correct"); btn.innerHTML += '<span class="mark">✓</span>'; }
-      else if(txt===e.picked){ btn.classList.add("wrong"); btn.innerHTML += '<span class="mark">✗</span>'; }
-    }else{
-      btn.addEventListener("click",()=>choose(txt));
-    }
-  });
-
-  const fb = $("#feedback");
-  if(answered){
-    if(e.picked===e.correct){ fb.className="feedback ok"; fb.textContent="¡Correcto!"; }
-    else { fb.className="feedback no"; fb.innerHTML="Incorrecto <span class='correctword'>La respuesta era: "+e.correct+"</span>"; }
-    fb.classList.remove("hidden");
-  }else fb.classList.add("hidden");
-
-  updateHud();
-  renderDots();
-  updateNav();
-}
-
-function choose(picked){
-  const e = deck[idx];
-  if(e.picked!==null) return;
-  e.picked = picked;
-  if(picked!==e.correct) addMistake(e.word.n);
-  else if(isReview) removeMistake(e.word.n);
-  renderQuiz();
-  saveSession();
-}
-
-/* ---- FLASHCARD ---- */
 function renderCard(){
-  // ocultar quiz, mostrar flashcard
-  $("#answers").classList.add("hidden");
-  $("#feedback").classList.add("hidden");
+  $("#allDone").classList.add("hidden");
+  $("#cardBack").classList.add("hidden");
+  $("#rateRow").classList.add("hidden");
+  $("#revealBtn").classList.remove("hidden");
 
-  const e = deck[idx];
-  const q = e.word;
+  const q = current.word;
   const askDe = cfg.dir==="de-es";
 
   $("#promptTag").textContent = askDe ? "¿Sabes qué significa?" : "¿Sabes cómo se dice?";
@@ -850,227 +661,192 @@ function renderCard(){
   if(askDe && q.pos){ posEl.textContent = q.pos; posEl.classList.remove("hidden"); }
   else posEl.classList.add("hidden");
 
-  const back = $("#cardBack");
+  $("#newBadge").classList.toggle("hidden", !current.isNew);
+
   $("#backAnswer").textContent = askDe ? q.es : cleanDe(q.de);
 
-  if(e.revealed){
-    back.classList.remove("hidden");
+  if(current.revealed){
+    $("#cardBack").classList.remove("hidden");
     $("#revealBtn").classList.add("hidden");
     $("#rateRow").classList.remove("hidden");
-    // intervalos previstos en cada botón
     $("#iAgain").textContent = previewInterval(q.n,"again");
     $("#iHard").textContent  = previewInterval(q.n,"hard");
     $("#iGood").textContent  = previewInterval(q.n,"good");
     $("#iEasy").textContent  = previewInterval(q.n,"easy");
-    // resaltar la nota ya elegida (si vuelves atrás)
-    Array.from($("#rateRow").children).forEach(b=>{
-      b.style.outline = (b.dataset.rate===e.rating) ? "3px solid rgba(0,0,0,.15)" : "none";
-    });
-  }else{
-    back.classList.add("hidden");
-    $("#revealBtn").classList.remove("hidden");
-    $("#rateRow").classList.add("hidden");
   }
-
   updateHud();
-  renderDots();
-  updateNav();
 }
 
 function revealCard(){
-  deck[idx].revealed = true;
+  if(!current) return;
+  current.revealed = true;
+  // al verla por primera vez, queda "introducida"
+  ensureIntroduced(current.word.n);
   renderCard();
-  saveSession();
 }
 
 function rateCard(rating){
-  const e = deck[idx];
-  e.rating = rating;
-  applyRating(e.word.n, rating);
-  // "Otra vez" reencola la tarjeta al final de la sesión
-  if(rating==="again"){
-    deck.push(buildCardEntry(e.word));
-  }
-  saveSession();
-  goNext();
+  if(!current || !current.revealed) return;
+  applyRating(current.word.n, rating);
+  sessionSeen.add(current.word.n);
+  flashSaved();
+  nextCard();
 }
 
-/* ===== HUD / NAV ===== */
 function updateHud(){
-  if(cfg.mode==="cards"){
-    const rated = deck.filter(e=>e.rating!==null).length;
-    const known = deck.filter(e=>e.rating==="good"||e.rating==="easy").length;
-    $(".stat.score .lab").textContent = "Sabidas";
-    $(".stat.streak .lab").textContent = "Por repasar";
-    $("#hudScore").textContent = known;
-    $("#hudStreak").textContent = deck.filter(e=>e.rating==="again"||e.rating==="hard").length;
-    $("#hudProg").textContent = (idx+1)+" / "+deck.length;
-    $("#progFill").style.width = (rated/deck.length*100)+"%";
+  $("#hudLearned").textContent = learnedCount();
+  $("#hudSession").textContent = sessionSeen.size;
+  $("#hudDue").textContent = dueList().length;
+}
+
+function showAllDone(){
+  $("#cardBack").classList.add("hidden");
+  $("#rateRow").classList.add("hidden");
+  $("#revealBtn").classList.add("hidden");
+  $("#newBadge").classList.add("hidden");
+  $("#promptWord").textContent = "—";
+  $("#promptTag").textContent = "Sesión";
+  $("#promptPos").classList.add("hidden");
+  $("#allDone").classList.remove("hidden");
+
+  const newLeft = newRemaining();
+  const due = dueList().length;
+  const txt = $("#adText");
+  const moreBtn = $("#moreNewBtn");
+  if(newLeft>0){
+    txt.textContent = "No hay repasos pendientes ahora. Te quedan "+newLeft+" palabras nuevas por aprender.";
+    moreBtn.classList.remove("hidden");
+    moreBtn.textContent = "Aprender una palabra nueva";
+  }else if(due>0){
+    txt.textContent = "Vuelve en un momento: hay "+due+" palabras a punto de tocar.";
+    moreBtn.classList.add("hidden");
   }else{
-    const s = computeScore();
-    $(".stat.score .lab").textContent = "Puntos";
-    $(".stat.streak .lab").textContent = "Racha";
-    $("#hudScore").textContent = s.score;
-    $("#hudStreak").textContent = s.streak;
-    $("#hudProg").textContent = (idx+1)+" / "+deck.length;
-    const done = deck.filter(e=>e.picked!==null).length;
-    $("#progFill").style.width = (done/deck.length*100)+"%";
+    txt.textContent = "¡Repasaste todo el vocabulario! Vuelve más tarde para los próximos repasos.";
+    moreBtn.classList.add("hidden");
   }
+  updateHud();
 }
 
-function isDone(e){ return cfg.mode==="cards" ? e.rating!==null : e.picked!==null; }
+/* ===== PESTAÑA: MIS PALABRAS (aprendidas / en progreso) ===== */
+let lwTab = "learned", lwQuery = "";
 
-function updateNav(){
-  $("#prevBtn").disabled = (idx===0);
-  const nb = $("#nextBtn");
-  const allDone = deck.every(isDone);
-  nb.textContent = (idx+1>=deck.length && allDone) ? "Ver resultados →" : "Siguiente →";
+// vistas pero todavía no afianzadas (tienen entrada pero no son "aprendidas")
+function progressWords(){
+  const s = loadSched();
+  return Object.keys(s).filter(n=> !isLearned(s[n])).map(Number)
+    .sort((a,b)=> (s[b].reps - s[a].reps) || (a-b)); // más repasadas primero
 }
 
-function goPrev(){ if(idx>0){ idx--; render(); saveSession(); } }
-function goNext(){
-  if(idx+1<deck.length){ idx++; render(); saveSession(); }
-  else if(deck.every(isDone)){ showResults(); }
-  else {
-    const next = deck.findIndex(e=>!isDone(e));
-    idx = next>=0 ? next : idx;
-    render();
-    saveSession();
+function showLearned(){
+  $("#setup").classList.add("hidden");
+  $("#game").classList.add("hidden");
+  $("#learned").classList.remove("hidden");
+  renderLearnedList();
+}
+
+function renderLearnedList(){
+  const s = loadSched();
+  const learned = learnedWords();
+  const progress = progressWords();
+  $("#cntLearned").textContent = learned.length;
+  $("#cntProgress").textContent = progress.length;
+
+  let nums = (lwTab==="learned") ? learned : progress;
+
+  // filtro de búsqueda
+  const q = lwQuery.trim().toLowerCase();
+  if(q){
+    nums = nums.filter(n=>{
+      const w = wordByN[n];
+      return cleanDe(w.de).toLowerCase().includes(q)
+          || w.de.toLowerCase().includes(q)
+          || w.es.toLowerCase().includes(q);
+    });
   }
+
+  const list = $("#learnedList");
+  const empty = $("#learnedEmpty");
+  if(nums.length===0){
+    list.innerHTML = "";
+    empty.classList.remove("hidden");
+    if(q){
+      empty.textContent = "Sin resultados para “"+lwQuery.trim()+"”.";
+    }else if(lwTab==="learned"){
+      empty.textContent = "Todavía no hay palabras aprendidas. Una palabra cuenta como aprendida cuando la repasas bien y su próximo repaso supera 1 día.";
+    }else{
+      empty.textContent = "Nada en progreso aún. Empieza a estudiar y aquí verás las palabras que ya viste pero todavía estás afianzando.";
+    }
+    return;
+  }
+  empty.classList.add("hidden");
+  list.innerHTML = nums.map(n=>{
+    const w = wordByN[n];
+    const c = s[n];
+    let tag;
+    if(lwTab==="learned"){
+      tag = c.ivl>=1 ? (c.ivl===1?"cada 1 día":"cada "+c.ivl+" días") : "—";
+    }else{
+      tag = c.reps>0 ? c.reps+"× vista" : "nueva";
+    }
+    return `<div class="lw">
+      <div class="lw-main">
+        <span class="lw-de">${cleanDe(w.de)}</span>
+        <span class="lw-es">${w.es}</span>
+      </div>
+      <span class="lw-ivl ${lwTab==='progress'?'prog':''}">${tag}</span>
+    </div>`;
+  }).join("");
 }
 
 function exitToMenu(){
   $("#game").classList.add("hidden");
-  $("#results").classList.add("hidden");
+  $("#learned").classList.add("hidden");
   $("#setup").classList.remove("hidden");
-  refreshReviewBox();
-  refreshResumeBanner();
-}
-
-/* ===== RESULTS ===== */
-function showResults(){
-  clearSession();
-  $("#game").classList.add("hidden");
-  $("#results").classList.remove("hidden");
-  const total = deck.length;
-  const rb = $("#resReviewBtn");
-
-  if(cfg.mode==="cards"){
-    const known = deck.filter(e=>e.rating==="good"||e.rating==="easy").length;
-    const toReview = deck.filter(e=>e.rating==="again"||e.rating==="hard").map(e=>e.word.n);
-    const uniqReview = [...new Set(toReview)];
-    const pct = Math.round(known/total*100);
-    $("#resCorrect").textContent = known;
-    $("#resTotal").textContent = total;
-    $("#resPct").textContent = pct+"% sabidas";
-    $(".mini-stats .ms.g .l").textContent = "Sabidas";
-    $(".mini-stats .ms.b .l").textContent = "Por repasar";
-    $(".mini-stats .ms.s .l").textContent = "Pendientes hoy";
-    $("#msCorrect").textContent = known;
-    $("#msWrong").textContent = uniqReview.length;
-    $("#msStreak").textContent = dueCards().length;
-
-    if(uniqReview.length>0){
-      rb.classList.remove("hidden");
-      rb.textContent = "Repasar ahora las "+uniqReview.length+" difíciles";
-      rb.onclick = ()=>startCardReview(uniqReview);
-    }else rb.classList.add("hidden");
-
-    let trophy,title,grade;
-    if(pct>=90){ trophy="🏆"; title="¡Excelente!"; grade="Dominas casi todo. Sehr gut!"; }
-    else if(pct>=70){ trophy="🌟"; title="¡Muy bien!"; grade="Buen avance, sigue repasando."; }
-    else if(pct>=40){ trophy="📚"; title="Vas avanzando"; grade="Las difíciles volverán pronto."; }
-    else { trophy="💪"; title="A repasar"; grade="Las marcaste para volver a verlas."; }
-    $("#trophy").textContent=trophy; $("#resTitle").textContent=title; $("#resGrade").textContent=grade;
-  }else{
-    const s = computeScore();
-    const pct = Math.round(s.correct/total*100);
-    $("#resCorrect").textContent = s.correct;
-    $("#resTotal").textContent = total;
-    $("#resPct").textContent = pct+"% de aciertos · "+s.score+" puntos";
-    $(".mini-stats .ms.g .l").textContent = "Aciertos";
-    $(".mini-stats .ms.b .l").textContent = "Fallos";
-    $(".mini-stats .ms.s .l").textContent = "Mejor racha";
-    $("#msCorrect").textContent = s.correct;
-    $("#msWrong").textContent = s.wrong;
-    $("#msStreak").textContent = s.best;
-
-    const roundWrong = deck.filter(e=>e.picked!==null && e.picked!==e.correct).map(e=>e.word.n);
-    if(roundWrong.length>0){
-      rb.classList.remove("hidden");
-      rb.textContent = "Repasar los "+roundWrong.length+" errores de esta partida";
-      rb.onclick = ()=>startQuizReview(roundWrong);
-    }else rb.classList.add("hidden");
-
-    let trophy,title,grade;
-    if(pct===100){ trophy="🏆"; title="¡Perfecto!"; grade="Dominas estas palabras. Sehr gut!"; }
-    else if(pct>=80){ trophy="🌟"; title="¡Muy bien!"; grade="Casi perfecto, sigue así."; }
-    else if(pct>=60){ trophy="👍"; title="¡Buen trabajo!"; grade="Vas por buen camino."; }
-    else if(pct>=40){ trophy="📚"; title="A seguir practicando"; grade="Repasa tus errores otra vez."; }
-    else { trophy="💪"; title="No te rindas"; grade="La repetición es la clave. ¡Otra vuelta!"; }
-    $("#trophy").textContent=trophy; $("#resTitle").textContent=title; $("#resGrade").textContent=grade;
-  }
+  refreshStats();
 }
 
 /* ===== INIT ===== */
 loadCfg();
-buildRanges();
-wireChips("mode","mode");
 wireChips("dir","dir");
-wireChips("count","count");
-wireChips("range","range");
 applyCfgToChips();
-updateStartLabel();
-refreshReviewBox();
-refreshResumeBanner();
+refreshStats();
 
-function refreshResumeBanner(){
-  const s = loadSession();
-  const banner = $("#resumeBanner");
-  if(!banner) return;
-  if(s && s.deck && s.deck.length){
-    banner.classList.remove("hidden");
-    const done = s.deck.filter(d=> s.mode==="cards" ? d.rating!=null : d.picked!=null).length;
-    $("#resumeInfo").textContent = (s.mode==="cards"?"Flashcards":"Quiz")+" · "+done+"/"+s.deck.length+" hechas";
-  }else banner.classList.add("hidden");
-}
-
-$("#startBtn").addEventListener("click",()=>{ clearSession(); startGame(); refreshResumeBanner(); });
-$("#prevBtn").addEventListener("click",goPrev);
-$("#nextBtn").addEventListener("click",goNext);
+$("#startBtn").addEventListener("click",startStudy);
+$("#learnedBtn").addEventListener("click",showLearned);
+$("#learnedBack").addEventListener("click",exitToMenu);
 $("#exitBtn").addEventListener("click",exitToMenu);
-$("#againBtn").addEventListener("click",()=>{ clearSession(); startGame(); });
-$("#menuBtn").addEventListener("click",exitToMenu);
-$("#resumeBtn").addEventListener("click",resumeSession);
-$("#discardBtn").addEventListener("click",()=>{ clearSession(); refreshResumeBanner(); });
 $("#revealBtn").addEventListener("click",revealCard);
+$("#moreNewBtn").addEventListener("click",nextCard);
+
+// pestañas y búsqueda de "Mis palabras"
+Array.from($("#lwTabs").children).forEach(t=>{
+  t.addEventListener("click",()=>{
+    Array.from($("#lwTabs").children).forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");
+    lwTab = t.dataset.tab;
+    renderLearnedList();
+  });
+});
+$("#lwSearch").addEventListener("input",e=>{ lwQuery = e.target.value; renderLearnedList(); });
+
 Array.from($("#rateRow").children).forEach(b=>{
   b.addEventListener("click",()=>rateCard(b.dataset.rate));
 });
-$("#reviewBtn").addEventListener("click",()=>startQuizReview(loadMistakes()));
-$("#dueBtn").addEventListener("click",()=>startCardReview(dueCards()));
-$("#clearReview").addEventListener("click",()=>{ saveMistakes([]); refreshReviewBox(); });
+$("#clearAll").addEventListener("click",()=>{
+  if(confirm("¿Reiniciar todo tu progreso? No se puede deshacer.")){
+    try{ localStorage.removeItem(SCHED_KEY); }catch(e){}
+    refreshStats();
+  }
+});
 
-// teclado
+// teclado: Espacio/Enter revela; 1-4 = Otra vez/Difícil/Bien/Fácil
 document.addEventListener("keydown",e=>{
   if($("#game").classList.contains("hidden")) return;
-  if(cfg.mode==="cards"){
-    const cur = deck[idx];
-    if(!cur.revealed && (e.key===" "||e.key==="Enter")){ e.preventDefault(); revealCard(); return; }
-    if(cur.revealed && ["1","2","3","4"].includes(e.key)){
-      const map = {"1":"again","2":"hard","3":"good","4":"easy"};
-      rateCard(map[e.key]); return;
-    }
-    if(e.key==="ArrowLeft"){ e.preventDefault(); goPrev(); }
-    else if(e.key==="ArrowRight"){ e.preventDefault(); goNext(); }
-  }else{
-    const answered = deck[idx] && deck[idx].picked!==null;
-    if(!answered && ["1","2","3","4"].includes(e.key)){
-      const b = $("#answers").children[+e.key-1];
-      if(b) b.click();
-    } else if(e.key==="ArrowLeft"){ e.preventDefault(); goPrev(); }
-    else if(e.key==="ArrowRight"){ e.preventDefault(); goNext(); }
-    else if(answered && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); goNext(); }
+  if(!current) return;
+  if(!current.revealed && (e.key===" "||e.key==="Enter")){ e.preventDefault(); revealCard(); return; }
+  if(current.revealed && ["1","2","3","4"].includes(e.key)){
+    const map = {"1":"again","2":"hard","3":"good","4":"easy"};
+    rateCard(map[e.key]);
   }
 });
 </script>
