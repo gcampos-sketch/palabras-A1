@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wortspiel A1</title>
+<style>
+  :root{
+    --ink:#1c1a17;
+    --paper:#f4ecdc;
+    --card:#fffaf0;
+    --line:#d8c8a8;
+    --accent:#c8452f;
+    --gold:#d99a23;
+    --green:#3f7d4e;
+    --green-soft:#dff0e2;
+    --red:#c8452f;
+    --red-soft:#f6dcd4;
+    --blue:#2a5b7a;
+    --shadow:rgba(40,30,15,.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    background:
+      radial-gradient(circle at 18% 12%, #fbf4e3 0%, transparent 45%),
+      radial-gradient(circle at 85% 90%, #efe3c8 0%, transparent 50%),
+      var(--paper);
+    color:var(--ink);
+    min-height:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:28px 16px 80px;
+  }
+  .wrap{width:100%;max-width:600px}
+
+  header.top{
+    text-align:center;
+    margin-bottom:18px;
+  }
+  .kicker{
+    font-size:12px;letter-spacing:.42em;text-transform:uppercase;
+    color:var(--gold);font-weight:700;margin-bottom:4px;
+  }
+  h1{
+    font-size:46px;font-weight:800;letter-spacing:-.02em;line-height:.95;
+    color:var(--ink);
+  }
+  h1 .de{color:var(--accent)}
+  .sub{font-size:14px;color:#7a6e57;margin-top:6px;font-style:italic}
+
+  .panel{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    box-shadow:0 14px 34px var(--shadow);
+    padding:26px 22px;
+    position:relative;
+  }
+  .panel::before{
+    content:"";position:absolute;inset:6px;border:1px solid #ece0c4;
+    border-radius:13px;pointer-events:none;
+  }
+
+  /* ---- SETUP SCREEN ---- */
+  .setup h2{font-size:22px;margin-bottom:4px}
+  .setup p.lead{font-size:14px;color:#7a6e57;margin-bottom:20px}
+  .field{margin-bottom:20px;position:relative;z-index:1}
+  .field label{
+    display:block;font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:#9a8b6c;font-weight:700;margin-bottom:9px;
+  }
+  .opt-row{display:flex;flex-wrap:wrap;gap:9px}
+  .chip{
+    flex:1 1 auto;min-width:64px;text-align:center;
+    padding:11px 10px;border:1.5px solid var(--line);border-radius:11px;
+    background:#fff;cursor:pointer;font-size:15px;font-weight:600;color:var(--ink);
+    transition:all .15s ease;font-family:inherit;
+  }
+  .chip small{display:block;font-size:11px;font-weight:400;color:#9a8b6c;margin-top:2px}
+  .chip:hover{border-color:var(--gold)}
+  .chip.active{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 5px 14px rgba(200,69,47,.35)}
+  .chip.active small{color:#ffe3da}
+
+  .range-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px}
+
+  .start-btn{
+    width:100%;margin-top:6px;padding:16px;border:none;border-radius:13px;
+    background:var(--ink);color:var(--paper);font-family:inherit;
+    font-size:18px;font-weight:700;letter-spacing:.02em;cursor:pointer;
+    box-shadow:0 8px 20px rgba(28,26,23,.3);transition:transform .12s,box-shadow .12s;
+    position:relative;z-index:1;
+  }
+  .start-btn:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(28,26,23,.4)}
+  .start-btn:active{transform:translateY(0)}
+
+  /* ---- GAME SCREEN ---- */
+  .topbar{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:14px;position:relative;z-index:1;
+  }
+  .exit-btn{
+    background:#fff;border:1.5px solid var(--line);border-radius:9px;
+    padding:7px 13px;font-family:inherit;font-size:13px;font-weight:700;
+    color:#7a6e57;cursor:pointer;transition:all .14s ease;
+  }
+  .exit-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .mode-tag{
+    font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--gold);font-weight:700;
+  }
+  .dots{
+    display:flex;flex-wrap:wrap;gap:6px;justify-content:center;
+    margin-bottom:20px;position:relative;z-index:1;
+  }
+  .dot{
+    width:13px;height:13px;border-radius:50%;border:1.5px solid var(--line);
+    background:#fff;cursor:pointer;transition:all .14s ease;flex:0 0 auto;
+  }
+  .dot:hover{transform:scale(1.2)}
+  .dot.correct{background:var(--green);border-color:var(--green)}
+  .dot.wrong{background:var(--red);border-color:var(--red)}
+  .dot.current{box-shadow:0 0 0 3px rgba(217,154,35,.4);border-color:var(--gold)}
+  .navbar{
+    display:flex;gap:11px;margin-top:18px;position:relative;z-index:1;
+  }
+  .nav-btn{
+    flex:1;padding:13px;border-radius:11px;font-family:inherit;font-size:15px;
+    font-weight:700;cursor:pointer;transition:transform .12s,opacity .12s;
+    background:#fff;border:1.5px solid var(--line);color:var(--ink);
+  }
+  .nav-btn:hover:not(:disabled){transform:translateY(-2px);border-color:var(--gold)}
+  .nav-btn:disabled{opacity:.4;cursor:default}
+  .nav-btn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .nav-btn.primary:hover{border-color:var(--ink)}
+  .review-box{
+    margin-top:18px;padding:15px;border:1.5px dashed var(--gold);
+    border-radius:13px;background:#fdf6e6;position:relative;z-index:1;
+  }
+  .review-head{
+    font-size:13px;color:#7a6e57;margin-bottom:11px;display:flex;
+    align-items:center;justify-content:space-between;
+  }
+  .review-head span{font-weight:800;color:var(--accent);font-size:16px}
+  .clear-link{
+    background:none;border:none;color:#b09a6e;font-family:inherit;
+    font-size:12px;cursor:pointer;text-decoration:underline;
+  }
+  .clear-link:hover{color:var(--red)}
+  .review-btn{
+    width:100%;padding:13px;border:none;border-radius:11px;background:var(--gold);
+    color:#3a2c08;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;
+    box-shadow:0 5px 14px rgba(217,154,35,.32);transition:transform .12s;
+  }
+  .review-btn:hover{transform:translateY(-2px)}
+  .review-btn.full{margin-top:11px}
+  .hud{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:16px;position:relative;z-index:1;
+  }
+  .hud .stat{text-align:center}
+  .hud .stat .num{font-size:24px;font-weight:800;line-height:1}
+  .hud .stat .lab{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#9a8b6c;margin-top:3px}
+  .hud .stat.score .num{color:var(--green)}
+  .hud .stat.streak .num{color:var(--gold)}
+  .hud .stat.prog .num{color:var(--blue);font-size:18px}
+
+  .progbar{height:6px;background:#e8dcc1;border-radius:6px;overflow:hidden;margin-bottom:22px;position:relative;z-index:1}
+  .progbar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--accent));width:0;transition:width .3s ease}
+
+  .prompt{
+    text-align:center;padding:22px 10px 26px;position:relative;z-index:1;
+  }
+  .prompt .tag{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px}
+  .prompt .word{font-size:38px;font-weight:800;color:var(--accent);line-height:1.05;letter-spacing:-.01em}
+  .prompt .pos{display:inline-block;margin-top:10px;font-size:12px;color:#8a7c60;font-style:italic;background:#f0e6cd;padding:3px 12px;border-radius:20px}
+
+  .answers{display:grid;gap:11px;position:relative;z-index:1}
+  .ans{
+    text-align:left;padding:15px 17px;border:1.5px solid var(--line);border-radius:12px;
+    background:#fff;cursor:pointer;font-family:inherit;font-size:16px;color:var(--ink);
+    transition:all .14s ease;line-height:1.35;
+  }
+  .ans:hover:not(:disabled){border-color:var(--gold);transform:translateX(3px)}
+  .ans:disabled{cursor:default}
+  .ans.correct{background:var(--green-soft);border-color:var(--green);color:var(--green);font-weight:700}
+  .ans.wrong{background:var(--red-soft);border-color:var(--red);color:var(--red)}
+  .ans .mark{float:right;font-weight:800;margin-left:8px}
+
+  .next-area{margin-top:18px;text-align:center;min-height:54px;position:relative;z-index:1}
+  .feedback{font-size:15px;font-weight:700;margin-bottom:10px}
+  .feedback.ok{color:var(--green)}
+  .feedback.no{color:var(--red)}
+  .feedback .correctword{display:block;font-weight:400;font-style:italic;color:#7a6e57;font-size:14px;margin-top:3px}
+  .next-btn{
+    padding:12px 30px;border:none;border-radius:11px;background:var(--ink);
+    color:var(--paper);font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;
+    box-shadow:0 6px 16px rgba(28,26,23,.28);transition:transform .12s;
+  }
+  .next-btn:hover{transform:translateY(-2px)}
+
+  /* ---- RESULTS ---- */
+  .results{text-align:center;position:relative;z-index:1}
+  .results .trophy{font-size:54px;margin-bottom:6px}
+  .results h2{font-size:28px;margin-bottom:4px}
+  .results .grade{font-size:15px;color:#7a6e57;margin-bottom:22px;font-style:italic}
+  .scoreline{font-size:54px;font-weight:800;color:var(--accent);line-height:1}
+  .scoreline span{font-size:24px;color:#bcae90}
+  .pct{font-size:16px;color:#7a6e57;margin-top:4px;margin-bottom:24px}
+  .mini-stats{display:flex;justify-content:center;gap:28px;margin-bottom:26px}
+  .mini-stats .ms .n{font-size:22px;font-weight:800}
+  .mini-stats .ms.g .n{color:var(--green)}
+  .mini-stats .ms.b .n{color:var(--red)}
+  .mini-stats .ms.s .n{color:var(--gold)}
+  .mini-stats .ms .l{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#9a8b6c;margin-top:3px}
+  .results .row{display:flex;gap:11px;flex-wrap:wrap}
+  .results .row button{
+    flex:1 1 140px;padding:14px;border-radius:12px;font-family:inherit;font-size:15px;
+    font-weight:700;cursor:pointer;transition:transform .12s;
+  }
+  .btn-again{background:var(--accent);color:#fff;border:none;box-shadow:0 6px 16px rgba(200,69,47,.32)}
+  .btn-menu{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+  .results .row button:hover{transform:translateY(-2px)}
+
+  .hidden{display:none}
+
+  .footnote{text-align:center;font-size:12px;color:#9a8b6c;margin-top:18px;font-style:italic}
+
+  @media (max-width:480px){
+    h1{font-size:36px}
+    .prompt .word{font-size:30px}
+    .scoreline{font-size:44px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="kicker">Vokabeltrainer · Deutsch A1</div>
+    <h1><span class="de">Wort</span>spiel</h1>
+    <div class="sub">Adivina la traducción · 723 palabras</div>
+  </header>
+
+  <!-- SETUP -->
+  <section id="setup" class="panel setup">
+    <h2>Configura tu partida</h2>
+    <p class="lead">Elige qué palabras quieres practicar y cuántas preguntas.</p>
+
+    <div class="field">
+      <label>Dirección</label>
+      <div class="opt-row" id="dir">
+        <button class="chip active" data-dir="de-es">Alemán → Español<small>ver alemán</small></button>
+        <button class="chip" data-dir="es-de">Español → Alemán<small>ver español</small></button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Número de preguntas</label>
+      <div class="opt-row" id="count">
+        <button class="chip active" data-count="10">10</button>
+        <button class="chip" data-count="20">20</button>
+        <button class="chip" data-count="30">30</button>
+        <button class="chip" data-count="50">50</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Rango de palabras (por número de lista)</label>
+      <div class="range-grid" id="range"></div>
+    </div>
+
+    <button class="start-btn" id="startBtn">Empezar a jugar</button>
+
+    <div class="review-box hidden" id="reviewBox">
+      <div class="review-head">
+        <span id="reviewCount">0</span> palabras por repasar
+        <button class="clear-link" id="clearReview">borrar</button>
+      </div>
+      <button class="review-btn" id="reviewBtn">Repasar mis errores</button>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" class="panel hidden">
+    <div class="topbar">
+      <button class="exit-btn" id="exitBtn" title="Volver al menú">⟵ Menú</button>
+      <div class="mode-tag" id="modeTag"></div>
+    </div>
+
+    <div class="hud">
+      <div class="stat score"><div class="num" id="hudScore">0</div><div class="lab">Puntos</div></div>
+      <div class="stat prog"><div class="num" id="hudProg">1 / 10</div><div class="lab">Pregunta</div></div>
+      <div class="stat streak"><div class="num" id="hudStreak">0</div><div class="lab">Racha</div></div>
+    </div>
+    <div class="progbar"><i id="progFill"></i></div>
+    <div class="dots" id="dots"></div>
+
+    <div class="prompt">
+      <div class="tag" id="promptTag">Traduce</div>
+      <div class="word" id="promptWord">—</div>
+      <span class="pos hidden" id="promptPos"></span>
+    </div>
+
+    <div class="answers" id="answers"></div>
+
+    <div class="next-area">
+      <div class="feedback hidden" id="feedback"></div>
+    </div>
+
+    <div class="navbar">
+      <button class="nav-btn" id="prevBtn">← Atrás</button>
+      <button class="nav-btn primary" id="nextBtn">Siguiente →</button>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="results" class="panel hidden">
+    <div class="results">
+      <div class="trophy" id="trophy">🏆</div>
+      <h2 id="resTitle">¡Terminaste!</h2>
+      <div class="grade" id="resGrade"></div>
+      <div class="scoreline"><span id="resCorrect">0</span><span> / <span id="resTotal">0</span></span></div>
+      <div class="pct" id="resPct">0% de aciertos</div>
+      <div class="mini-stats">
+        <div class="ms g"><div class="n" id="msCorrect">0</div><div class="l">Aciertos</div></div>
+        <div class="ms b"><div class="n" id="msWrong">0</div><div class="l">Fallos</div></div>
+        <div class="ms s"><div class="n" id="msStreak">0</div><div class="l">Mejor racha</div></div>
+      </div>
+      <div class="row">
+        <button class="btn-again" id="againBtn">Jugar otra vez</button>
+        <button class="btn-menu" id="menuBtn">Cambiar ajustes</button>
+      </div>
+      <button class="review-btn full hidden" id="resReviewBtn">Repasar los errores de esta partida</button>
+    </div>
+  </section>
+
+  <p class="footnote">Hecho con Dia · Vocabulario A1</p>
+</div>
+
+<script>
+/* ===== VOCABULARIO ===== */
+const RAW = [
+"aufstehen (v)|ponerse de pie/levantarse","leicht (adv) (adj)|ligeramente/levemente (adv) o leve/facil/cómodo (adj)","der Schluss/die Schlüsse (s)|el final/conclusión","wichtig (adj)|importante/de interés","der Verwandte/die Verwandten (s)|el familiar","fremd (adj)|extraño/ajeno/exótico/foráneo","sagen (v)|decir","das Leben/die Leben (s)|la vida","der Familienstand/die Familienstände (s)|el estado civil","der Donnerstag/die Donnerstage (s)|el jueves","die Reparatur/die Reparaturen (s)|la reparación/arreglo","besuchen (v)|asistir a algo/visitar algo o alguien","sitzen (v)|estar sentado","die Tochter/die Töchter (s)|la hija","die Uhr/die Uhren (s)|el reloj","besser (adv)|mejor/más","pünktlich (adv) (adj)|puntualmente (adv) o puntual (adj)","der Geburtstag/die Geburtstage (s)|el cumpleaños","holen (v)|ir a buscar algo o alguien/recoger algo o alguien","das Geburtsjahr/die Geburtsjahre (s)|el año de nacimiento","wer? (pron)|quién?","der Vater/die Väter (s)|el padre","die Zeitung/die Zeitungen (s)|el periódico","nächster (adj)|siguiente","früher (adv)|antiguamente/antaño/antes","schön (adj) (adv)|hermoso/bonito (adj) o bien (adv)","die Idee/die Ideen (s)|la idea/noción","der Anrufbeantworter/die Anrufbeantworter (s)|el contestador automático/buzón de voz","schließen (v)|cerrar algo","der Tisch/die Tische (s)|la mesa","die Ecke/die Ecken (s)|la esquina/rincón/ángulo","grau (adj)|gris","fliegen (v)|volar","abgeben (v)|entregar algo/dar algo","die Großeltern (s)|los abuelos","auch (adv)|también/aún","das Feuer/die Feuer (s)|el fuego","das Ergebnis/die Ergebnisse (s)|el resultado","krank (adj)|enfermo","minus (adv) (conj)|menos","der Doktor/die Doktoren (s)|el médico","das Hühnchen/die Hühnchen (s)|el pollo","die Mitte/die Mitten (s)|el medio/centro","sie|ella","kaputt (adj)|roto/estropeado","erlauben (v)|permitir o conceder algo","die Führung/die Führungen (s)|la dirección/gerencia/gestión","der Kunde/die Kunden (s)|el cliente/comprador/usuario","das Fahrrad/die Fahrräder (s)|la bicicleta","schwarz (adj) (adv)|negro/clandestino/ilegal (adj) o ilegalmente (adv)","die Butter (s)|la mantequilla","verkaufen (v)|vender","später (adv)|más tarde/después","die Hose/die Hosen (s)|el pantalón","das Dorf/die Dörfer (s)|el pueblo","die Pause/die Pausen (s)|el descanso/pausa/respiro","der Löwe/die Löwen (s)|el león","der Kugelschreiber/die Kugelschreiber (s)|el bolígrafo","wissen (v)|conocer/saber","der Sonntag/die Sonntage (s)|el domingo","der Mittag/die Mittage (s)|el mediodía","der Zucker/die Zucker (s)|el azúcar","der Schlüssel/die Schlüssel (s)|la llave/clave","der Baum/die Bäume (s)|el árbol","die Banane/die Bananen (s)|el plátano","grillen (v)|grillar o asar/hacer una barbacoa","der Brief/die Briefe (s)|la carta","warum? (adv)|por qué?","die Jahreszeit/die Jahreszeiten (s)|la temporada/estación del año","sehen (v)|mirar","die Stelle/die Stellen (s)|el lugar/agencia/puesto/ubicación","die Größe/die Größen (s)|el tamaño/talla/valor/magnitud","gratulieren (v)|felicitar a","der Tag/die Tage (s)|el día","der Wohnungswechsel/die Wohnungswechsel|el cambio de piso o domicilio","anmelden (v)|registrarse/inscribir","langsam (adv) (adj)|despacio/lentamente (adv) o lento/paulatino (adj)","der Feierabend/die Feierabende (s)|fin del trabajo","die Zeitangabe/die Zeitangaben (s)|la hora/la fecha","bringen (v)|traer algo a alguien o llevar algo a alguien","der Bär/die Bären (s)|el oso","die Küche/die Küchen (s)|la cocina","das Telefon/die Telefone (s)|el teléfono","woher? (adv)|de dónde?","die Ordnung/die Ordnungen (s)|el orden","essen (v)|comer","gern (adv)|gustosamente","der Fehler/die Fehler (s)|el error/falta/defecto","der Laden/die Läden (s)|la tienda","der Film/die Filme (s)|la película","der Apfel/die Äpfel (s)|la manzana","die Maschine/die Maschinen (s)|la máquina","mieten (v)|alquilar","böse (adj)|malvado/enojado","möchten (v)|gustar/querer algo o a alguien","der Sport/die Sporte (s)|el deporte","anbieten (v)|ofrecer algo a alguien","die Nacht/die Nächte (s)|la noche","der Morgen/die Morgen (s)|la mañana","das Flugzeug/die Flugzeuge (s)|el avión","die Tasche/die Taschen (s)|la bolsa/bolso","das Haar/die Haare (s)|el pelo/cabello","der Sohn/die Söhne (s)|el hijo","der Schrank/die Schränke (s)|el armario","die Unterschrift/die Unterschriften (s)|la firma","vorstellen (v)|presentar a alguien","der Flughafen/die Flughäfen (s)|el aeropuerto","das Kilogramm/die Kilogramme (s)|el kilogramo","der Ausgang/die Ausgänge (s)|la salida/desenlace","einkaufen (v)|hacer o ir de compras","der Teil/die Teile (s)|la parte/porción/fragmento","die Woche/die Wochen (s)|la semana","die Auskunft/die Auskünfte (s)|la información/razón/declaración","jung (adj)|joven","verboten (adj)|prohibido/ilegal","lesen (v)|leer","der Zahn/die Zähne (s)|el diente/la púa","die Entschuldigung/die Entschuldigungen (s)|la excusa/disculpa/perdón","das Auto/die Autos (s)|el auto","das Gepäck (s)|el equipaje","braun (adj)|marrón","ausmachen (v)|apagar/quedar en","suchen (v)|buscar algo o alguien","und (conj)|y","kosten (v)|costar","telefonieren (v)|hablar por teléfono","zum Beispiel|por ejemplo","weiblich (adj)|femenino","antworten (v)|responder","weinen (v)|llorar","immer (adv)|siempre","die Reise/die Reisen (s)|el viaje","verstehen (v)|entender algo o a alguien","dürfen (v)|tener permiso para hacer algo","die Treppe/die Treppen (s)|la escalera","die Gitarre/die Gitarren (s)|la guitarra","wiederholen (v)|repetir algo","die Klasse/die Klassen (s)|la clase/categoría/curso","der Anschluss/die Anschlüsse (s)|la conexión/enlace/puerto/correspondencia","der Glückwunsch/die Glückwünsche (s)|la felicitación","die Dienstleistung/die Dienstleistungen (s)|el servicio o prestación del servicio","aufhören (v)|parar/finalizar","die Biene/die Bienen (s)|la abeja","die Karte/die Karten (s)|la tarjeta/ficha/mapa/carta","der Name/die Namen (s)|el nombre","der Anruf/die Anrufe (s)|la llamada telefónica","die Party/die Partys (s)|la fiesta","geradeaus (adj) (adv)|recto (adj) o en línea recta/todo seguido (adv)","die Briefmarke/die Briefmarken (s)|el sello/estampilla","wo? (adv)|dónde?","die Anmeldung/die Anmeldungen (s)|el registro/notificación","der Ausflug/die Ausflüge (s)|la excursión","der Reiseführer/die Reiseführer (s)|el guía","die Reiseführerin/die Reiseführerinnen (s)|la guía","das Mädchen/die Mädchen (s)|la chica","der Opa/die Opas (s)|el abuelito","kennenlernen (v)|conocer (algo/a alguien)","warten (v)|esperar algo o a alguien","die Nationalität/die Natrionalitäten (s)|la nacionalidad","die Kleidung/die Kleidungen (s)|la ropa/atuendo","ja (adv)|sí","der Ehemann/die Ehemänner (s)|el esposo","enden (v)|finalizar/terminar","der Erwachsene/die Erwachsenen (s)|el adulto","arbeiten (v)|trabajar","teuer (adj)|caro/costoso","der Familienname/die Familiennamen (s)|el apellido/nombre de la familia","nehmen (v)|tomar o coger algo","wohnen (v)|residir/habitar/vivir en","der Sportverein/die Sportvereine (s)|el club deportivo","der Bleistift/die Bleistifte (s)|el lápiz","sehr (adv)|muy/mucho","die Eltern (s)|los padres","die Autobahn/die Autobahnen (s)|la autopista","lachen (v)|reír","der Norden (s)|el norte","der Wochentag/die Wochentage (s)|el día de la semana","ruhig (adj)|tranquilo/calmoso/quieto","das Wochenende/die Wochenenden (s)|el fin de semana","glauben (v)|creer o pensar algo/opinar","links (adv)|a la izquierda","das Zimmer/die Zimmer (s)|la habitación","der Westen (s)|el oeste","der Quadratmeter/die Quadratmeter (s)|el metro cuadrado","der Montag/die Montage (s)|el lunes","das Lied/die Lieder (s)|la canción","leider (adv)|desgraciadamente/lamentablemente","schon (adv)|ya","die Haltestelle/die Haltestellen (s)|la parada","das Gramm/die Gramme (s)|el gramo","der Bahnsteig/die Bahnsteige (s)|el andén (del ferrocarril)","die Eisenbahn/die Eisenbahnen (s)|el ferrocarril","ein bisschen|un poco","das Geschenk/die Geschenke (s)|el regalo/don","wunderbar (adj) (adv)|maravilloso (adj) o estupendamente (adv)","die Zitrone/die Zitronen (s)|el limón","der Gast/die Gäste (s)|el invitado/huésped/cliente","der Ort/die Orte (s)|el lugar/sitio/local/puesto","die Prüfung/die Prüfungen (s)|el examen/ensayo/verificación/comprobación","anmachen (v)|encender o prender algo/aliñar o amasar algo","die Postleitzahl/die Postleitzahlen (s)|el código postal","der Schinken/die Schinken (s)|el jamón","noch (adv)|todavía/aún","die Praxis/die Praxen (s)|la práctica/consulta/consultorio","die Ankunft/die Ankünfte (s)|la llegada/arribo","die Gruppe/die Gruppen (s)|el grupo/categoría","die Adresse/die Adressen (s)|la dirección","anziehen (v)|vestir algo o a alguien","der Ausländer/die Ausländer (s)|el extranjero","die Ausländerin/die Ausländerinnen (s)|la extranjera","das Bier/die Biere (s)|la cerveza","besichtigen (v)|visitar algo (un lugar)","mitmachen (v)|participar en algo","unten (adv)|abajo","falsch (adj)|falso/equivocado/incorrecto","das Ei/die Eier (s)|el huevo/óvulo/testículo","der Süden (s)|el sur","die Schwester/die Schwestern (s)|la hermana/sor","der Schüler/die Schüler (s)|el alumno/escolar/estudiante/discípulo","die Schülerin/die Schülerinnen (s)|la alumna/escolar/estudiante/discípula","die Rolltreppe/die Rolltreppen (s)|la escalera mecánica","daneben (adv)|al lado/además","drücken (v)|presionar algo (ej boton)/apretar algo o a alguien/molestar (zapatos)/empujar algo o a alguien","überweisen (v)|transferir algo a alguien (dinero)/hacer una transferencia","sein (v)|ser/estar","die Einladung/die Einladungen (s)|la invitación","die Tageszeit/die Tageszeiten (s)|la hora del día","einmal (adv)|una vez","ankreuzen (v)|marcar algo con una cruz","seit (prep) (conj)|desde (prep) o desde que (conj)","die Welt/die Welten (s)|el mundo","die Heimat/die Heimaten (s)|la patria/país o tierra natal","verdienen (v)|merecer o ganar algo (dinero)","tschüss|adiós/hasta luego","die Anrede/die Anreden (s)|el tratamiento","der Fisch/die Fische (s)|el pescado","bitten (v)|pedir algo a alguien","das Hotel/die Hotels (s)|el hotel","das Messer/die Messer (s)|el cuchillo","zurück (adv)|atrás/hacia atrás","beide (adj)|ambos/ambas","der Buchstabe/die Buchstaben (s)|la letra","lieben (v)|amar","sofort (adv)|inmediatamente/ahora mismo","viel (adv)|mucho","das Handy/die Handys (s)|el celular","das Getränk/die Getränke (s)|la bebida","der Automat/die Automaten (s)|la máquina expendedora/cajero automático","weiß (adj)|blanco","bitter (adj)|amargo","der Bahnhof/die Bahnhöfe (s)|la estación de tren","richtig (adj)|correcto/cierto/justo/verdadero","allein (adj)|solo/a solas/exclusivo","gestern (adv)|ayer","das Wandern (s)|la excursión/el senderismo","wandern (v)|ir de excursión/hacer una caminata","dorthin (adv)|ahí","riechen (v)|oler","denn (conj)|pues/que/pos/como que","umziehen (wohnung) (v)|mudarse","die Mücke/die Mücken (s)|el mosquito","die Minute/die Minuten (s)|el minuto","das Buch/die Bücher (s)|el libro","mitkommen (v)|acompañar","das Ende/die Enden (s)|el final","aber (conj)|pero","das Schaf/die Schafe (s)|la oveja","der Wunsch/die Wünsche (s)|el deseo","das Salz/die Salze (s)|la sal","der Freund/die Freunde (s)|el amigo/el novio","die Freundin/die Freundinnen (s)|la amiga/la novia","der Fuß/die Füße (s)|el pie","der Bruder/die Brüder (s)|el hermano","helfen (v)|ayudar","die Lektüre/die Lektüren (s)|la lectura","die Wortgruppe/die Wortgruppen (s)|el grupo de palabras","der Kaffee/die Kaffees (s)|el café (lugar)","müssen (v)|deber","die Maus/die Mäuse (s)|el ratón","das Gewicht/die Gewichte (s)|el peso","der Schuh/die Schuhe (s)|el zapato","der Hunger (s)|el hambre","der Satz/die Sätze (s)|la frase","das Problem/die Probleme (s)|el problema","gehen (v)|ir","neu (adj)|nuevo/reciente","der Witz/die Witze (s)|la broma/chiste","selbstständig (adj)|independiente","der Lichtschalter/die Lichtschalter (s)|el interruptor de la luz","gefallen (v)|gustar o agradar a alguien","sich ausziehen (v)|desnudarse","aussteigen (v)|bajar de algo/desembarcar","die Hochzeit/die Hochzeiten (s)|la boda","oft (adv)|a menudo/frecuentemente","heute (adv)|hoy","der Zoll/die Zölle (s)|la aduana","die Mutter/die Mütter (s)|la madre","schlafen (v)|dormir","die Sekunde/die Sekunden (s)|el segundo","die Freizeit/die Freizeiten (s)|el tiempo libre/tiempo de ocio","der Tee/die Tees (s)|el té","regnen (v)|llover","zusammen (adv)|juntos","die Vorwahl/die Vorwahlen (s)|el prefijo (teléfono)","waschen (v)|lavar","wie viel?/wie viele? (pron)|cuánto?","der Wind/die Winde (s)|el viento","das Gesicht/die Gesichter (s)|la cara","alt (adj)|anciano/viejo/mayor/antiguo","klein (adj)|pequeño/bajo/menudo/poco","erzählen (v)|contar (cuento, historia, etc)/comentar","die Speise/die Speisen (s)|la comida","der Kindergarten/die Kindergärten (s)|el jardín de infancia","ich (pron)|yo","das Aussehen (s)|el aspecto/físico","reparieren (v)|reparar","öffnen (v)|abrir","der Beruf/die Berufe (s)|la profesión","das Geld/die Gelder (s)|el dinero","das Licht/die Lichter (s)|la luz","gültig (adj)|válido","einsteigen (v)|subir a/embarcar","die Kuh/die Kühe (s)|la vaca","haben (v)|tener","der Artikel/die Artikel (s)|el artículo (periódico)","die Zeit/die Zeiten (s)|el tiempo/el periodo/la época","die Lösung/die Lösungen (s)|la solución/el desenlace/la salida","blau (adj)|azul","das Bad/die Bäder (s)|el baño","der Kollege/die Kollegen (s)|el colega","die Kollegin/die Kolleginnen (s)|la colega","der Ausweis/die Ausweise (s)|la identificación/carné","der Reis/die Reise (s)|el arroz","hinten (adv)|detrás de/atrás","fragen (v)|preguntar","die Milch/die Milchen (s)|la leche","das Sofa/die Sofas (s)|el sofá","das Bein/die Beine (s)|la pierna","die Bar/die Bars (s)|el bar","(in) bar (adv)|en efectivo","wohin? (adv)|a dónde?","der Verkäufer/die Verkäufer (s)|el vendedor","die Verkäuferin/die Verkäuferinnen (s)|la vendedora","der Bauch/die Bäuche (s)|el abdomen","der Mittwoch/die Mittwoche (s)|el miércoles","glücklich (adj)|feliz","der Kurs/die Kurse (s)|el curso","die Uhrzeit/die Uhrzeiten (s)|el tiempo/la hora","das Formular/die Formulare (s)|el formulario/impreso/boletín","die Durchsage/die Durchsagen (s)|el mensaje","ankommen (v)|llegar","der Preis/die Preise (s)|el precio","also (adv)|así que/entonces/por lo tanto","rot (adj)|rojo","die Zigarette/die Zigaretten (s)|el cigarrillo","die Bäckerei/die Bäckereien (s)|la panadería","nichts (adv)|nada/ni un poco","der Hund/die Hunde (s)|el perro","die Hündin/die Hündinnen (s)|la perra","das Alter/die Alter (s)|la edad/vejez","die Polizei/die Polizeien (s)|la policía","gehören (v)|pertenecer/ser de algo o alguien","der See/die Seen (s)|el lago","das Fieber/die Fieber (s)|la fiebre","die Frage/die Fragen (s)|la pregunta","schnell (adv) (adj)|rápidamente (adv)/rápido (adj)","lang (adj)|largo/extenso","der Durst (s)|la sed","der Meter/die Meter (s)|el metro","die Ärztin/die Ärztinnen (s)|la médico","der Arzt/die Ärzte (s)|el médico","der Kater/die Kater (s)|el gato","die Katze/die Katzen (s)|la gata","bald (adv)|pronto","die Hand/die Hände (s)|la mano","der Salat/die Salate (s)|la ensalada","die Vorsicht (s)|la precaución/cautela","die Kasse/die Kassen (s)|la caja","der Löffel/die Löffel (s)|la cuchara","morgen (adv)|mañana","dann (adv)|entonces/después/luego","das Beispiel/die Beispiele (s)|el ejemplo","die Staatsangehörigkeit/die Staatsangehörigkeiten (s)|la ciudadanía","der Lastkraftwagen/die Lastkraftwägen (LKW) (s)|el camión","sollen (v)|deber/haber de (+inf)","schicken (v)|enviar","das Schild/die Schilder (s)|la etiqueta/placa/letrero","reisen (v)|viajar/desplazarse","das Geschäft/die Geschäfte (s)|el negocio/tienda","der Aufzug/die Aufzüge (s)|el ascensor","die Jacke/die Jacken (s)|la chaqueta","der Ball/die Bälle (s)|la pelota","der Kopf/die Köpfe (s)|la cabeza","dauern (v)|durar/tardar","die Jugendliche/die Jugendlichen (s)|la adolescente/los jóvenes","der Jugendliche/die Jugendlichen (s)|el adolescente/los jóvenes","das Ticket/die Tickets (s)|el billete","der Garten/die Gärten (s)|el jardín","die Wohnung/die Wohnungen (s)|el piso/apartamento","draußen (adv)|afuera/fuera","anklicken (v)|clicar sobre","das Pfund/die Pfunde (s)|medio kilo, la libra (moneda)","der Pinguin/die Pinguine (s)|el pinguino","die Hausaufgabe/die Hausaufgaben (s)|los deberes/tareas","duschen (v)|duchar (se)","das Willkommen/die Willkommen (s)|la bienvenida","willkommen (adj)|bienvenido","das Studium/die Studien (s)|los estudios/carrera/formación universitaria","der Gruß/die Gruße (s)|el saludo","mögen (v)|gustar/querer","feiern (v)|celebrar","die Fahrkarte/die Fahrkarten (s)|el billete/pasaje/boleto","schlecht (adj) (adv)|malo (adj)/mal (adv)","anrufen (v)|llamar por teléfono","der Monat/die Monate (s)|el mes","kochen (v)|cocinar","rauchen (v)|fumar","fahren (v)|conducir","lernen (v)|aprender algo/estudiar algo","lange (adv)|en mucho tiempo","brauchen (v)|necesitar algo o alguien","die Sehenswürdigkeit/die Sehenswürdigkeiten (s)|la atracción turística","die Farbe/die Farben (s)|el color","schwimmen (v)|nadar","halten (v)|aguantar algo/parar","der Dank/die Danke (s)|las gracias","der Bus/die Busse (s)|el autobús","grün (adj)|verde","das Datum/die Daten (s)|la fecha","stellen (v)|colocar algo","werden (v)|convertirse en","das Land/die Länder (s)|el país","geben (v)|dar","die Flasche/die Flaschen (s)|la botella/frasco","ausfüllen (v)|rellenar algo (formulario, etc)","das Frühstück/die Frühstücke (s)|el desayuno","die Fliege/die Fliegen (s)|la mosca","ledig (adj)|soltero","der Termin/die Termine (s)|la cita/hora/turno","die Stadt/die Städte (s)|la ciudad","der Chef/die Chefs (s)|el jefe","die Chefin/die Chefinnen (s)|la jefa","das Brot/die Brote (s)|el pan","der Text/die Texte (s)|el texto","der Empfänger/die Empfänger (s)|el receptor","die Empfängerin/die Empfängerinnen (s)|la receptora","der Moment/die Momente (s)|el momento/rato","er (pron)|él","frei (adj) (adv)|libre/carente/despejado/exento/franco (adj)/ abiertamente/libremente (adv)","der Elefant/die Elefanten (s)|el elefante","lustig (adj)|divertido","normal (adj)|normal","der Vormittag/die Vormittage (s)|la mañana","das Möbel/die Möbel (s)|el mueble","das Lebensmittel/die Lebensmittel (s)|el alimento/viveres","der Fahrer/die Fahrer (s)|el conductor","die Fahrerin/die Fahrerinnen (s)|la conductora","oben (adv)|arriba, por encima de","der Vermieter/die Vermieter (s)|el casero","die Vermieterin/die Vermieterinnen (s)|la casera","bleiben (v)|permanecer/seguir/quedarse","der Kiosk/die Kioske (s)|el quiosco","der Zug/die Züge (s)|el tren","das Wiedersehen/die Wiedersehen (s)|el reencuentro","die Abfahrt/die Abfahrten (s)|la salida/partida","automatisch (adj)|automático","kaufen (v)|comprar","das Schwimmbad/die Schwimmbäder (s)|la piscina","die Speisekarte/die Speisekarten (s)|el menú","bekommen (v)|recibir/conseguir","die Ente/die Enten (s)|el pato","einfach (adj) (adv)|fácil/simple (adj) / sencillamente/simplemente (adv)","mitnehmen (v)|llevarse algo o a alguien","die Schule/die Schulen (s)|la escuela/colegio","das Auge/die Augen (s)|el ojo","abfahren (v)|partir/salir","nie (adv) (adj)|nunca (adv)/ infalible (adj)","der Lehrer/die Lehrer (s)|el profesor","die Lehrerin/die Lehrerinnen (s)|la profesora","kennen (v)|saber/conocer","der Nachmittag/die Nachmittage (s)|la tarde","die Ansage/die Ansagen (s)|el aviso/anuncio","die Post/die Posten (s)|el correo","leise (adj) (adv)|silencioso (adj)/silenciosamente (adv)","circa (adv)|alrededor de","drucken (v)|imprimir","wann? (adv)|cuándo?","tun (v)|hacer/funcionar","laut (adj)|ruidoso/fuerte","legen (v)|poner/instalar/asentar","die Sprache/die Sprachen (s)|el idioma","eilig (adv) (adj)|deprisa (adv)/ apresurado (adj)","bekannt (adj)|conocido","die S-Bahn/die S-Bahnen (s)|el tren urbano o metropolitano","die Oma/die Omas (s)|la abuelita","Sport treiben (v)|hacer deporte","das Thema/die Themen (s)|el tema","der Mann/die Männer (s)|el hombre","zahlen (v)|pagar","das Fleisch/die Fleische (s)|la carne","das Bett/die Betten (s)|la cama","das Prozent/die Prozente (s)|el porcentaje","die Gabel/die Gabeln (s)|el tenedor","das Krokodil/die Krokodile (s)|el cocodrilo","übernachten (v)|pasar la noche/pernoctar/trasnochar","zufrieden (adj)|satisfecho/contento","die Kartoffel/die Kartoffeln (s)|la patata","der Platz/die Plätze (s)|la plaza","fehlen (v)|faltar","das Praktikum/die Praktika (s)|la práctica/pasantía","die Kreditkarte/die Kreditkarten (s)|la tarjeta de crédito","der Herr/die Herren (s)|el señor","die Geschwister (s)|los hermanos","einladen (v)|invitar a","vielleicht (adv)|quizás/tal vez","die Kinderbetreuung/die Kinderbetreuungen (s)|la guardería","tot (adj)|muerto","der Absender/die Absender (s)|el remitente","die Absenderin/die Absenderinnen (s)|la remitente","hell (adj)|claro/luminoso/rubio (tabaco, cerveza)/despierto/lúcido/nídito","jetzt (adv)|ahora/ya","wie? (adv)|cómo?","die Währung/die Währungen (s)|la moneda","die Äffin/die Äffinnen (s)|la mona","der Affe/die Affen (s)|el mono","die Tomate/die Tomaten (s)|el tomate","die Anzeige/die Anzeigen (s)|el anuncio/denuncia/parte","abholen (v)|recoger","mehr (adv) (adj)|más/mejor (adv) / mucho/harto (adj)","der Freitag/die Freitage (s)|el viernes","der Hase/die Hasen (s)|el conejo","der Radfahrer/die Radfahrer (s)|el ciclista","die Radfahrerin/die Radfahrerinnen (s)|la ciclista","der Samstag/die Samstage (s)|el sábado","bezahlen (v)|pagar","trinken (v)|beber","das Wort/die Worte o Wörter (s)|la palabra","zurzeit (adv)|actualmente/de momento/en este momento","sich entschuldigen (v)|disculparse","das Treffen/die Treffen (s)|la reunión/encuentro","treffen (v)|reunirse","anfangen (v)|comenzar","die Bitte/die Bitten (s)|la petición/favor","tanzen (v)|bailar","dort (adv)|allí/allá/ahí","das Glas/die Gläser (s)|el vaso/vidrio/cristal","schmecken (v)|saber a algo","der Anfang/die Anfänge (s)|el comienzo","liegen (v)|estar/yacer/estar ubicado","billig (adj)|barato/económico","die Straßenbahn/die Straßenbahnen (s)|el tranvía","die Aussage/die Aussagen (s)|la declaración/enunciado/proposición","das Essen/die Essen (s)|la comida","der Vorname/die Vornamen (s)|el nombre","der Wein/die Weine (s)|el vino","die Blume/die Blumen (s)|la flor","du (pron)|tú","rechts (adv)|a la derecha","nein (adv)|no","der Herbst/die Herbste (s)|el otoño","wir (pron)|nosotros","das Öl/die Öle (s)|el aceite/óleo/petróleo","das Gemüse/die Gemüse (s)|la verdura","scheinen (v)|brillar/parecer/aparentar","erklären (v)|explicar","das Glück/die Glücke (s)|la felicidad/suerte","die Firma/die Firmen (s)|la empresa","der Plan/die Pläne (s)|el plan/proyecto","das Haus/die Häuser (s)|la casa","unterschreiben (v)|firmar","das Kind/die Kinder (s)|el niño/infante","die Frau/die Frauen (s)|la mujer/señora","das Museum/die Museen (s)|el museo","der Liter/die Liter (s)|el litro","die Familie/die Familien (s)|la familia","der Mund/die Münder (s)|la boca","möglich (adj)|posible","spielen (v)|jugar","arbeitslos (adj)|desempleado","der Drucker/die Drucker (s)|la impresora","heißen (v)|llamar (se)","das Restaurant/die Restaurants (s)|el restaurante","der Appetit/die Appetite (s)|el apetito","der Dienstag/die Dienstage (s)|el martes","heiraten (v)|casarse con","der Fragebogen/die Fragebogen o Fragebögen (s)|el cuestionario","die Zahl/die Zahlen (s)|el número","der Frühling/die Frühlinge (s)|la primavera","das Konto/die Konten o Kontos o Konti (s)|la cuenta","das Gespräch/die Gespräche (s)|la conversación","der Geburtsort/die Geburtsorte (s)|el lugar de nacimiento","der Urlaub/die Urlaube (s)|la vacaciones","der Blick/die Blicke (s)|la mirada","die Himmelsrichtung/die Himmelsrichtungen (s)|el punto cardinal","finden (v)|encontrar","machen (v)|hacer","groß (adj)|grande/alto/voluminoso/mayor","aussehen (v)|verse","sich freuen (v)|alegrarse","die Leute (s)|la gente","was? (pron)|qué?","kurz (adv) (adj)|brevemente (adv)/ breve (adj)","das Ohr/die Ohren (s)|el oído","der Osten (s)|el este/oriente","das Wasser/die Wasser (s)|el agua","die Toilette/die Toiletten (s)|el baño","der Themenbereich (s)|la temática","der Arbeitsplatz/die Arbeitsplätze (s)|el puesto de trabajo","der Eintritt/die Eintritte (s)|el ingreso","die Dusche/die Duschen (s)|la ducha","der Vogel/die Vögel (s)|el pájaro","vermieten (v)|alquilar","leben (v)|vivir","der Balkon/die Balkone o Balkons (s)|el balcón","der Abend/die Abende (s)|la noche","das Ausland (s)|el extranjero (país)","die Antwort/die Antworten (s)|la respuesta","der Zentimeter/die Zentimeter (s)|el centímetro","hier (adv)|aquí","die Information/die Informationen (s)|la información","der Mensch/die Menschen (s)|el hombre/humano/persona","das Angebot/die Angebote (s)|la oferta","danken (v)|agradecer","die Schokolade/die Schokoladen (s)|el chocolate","kommen (v)|venir/llegar","die Straße/die Straßen (s)|la calle","das Kino/die Kinos (s)|el cine","breit (adj)|amplio/ancho/borracho/ebrio","die Dame/die Damen (s)|la señora","der Winter/die Winter (s)|el invierno","die Lampe/die Lampen (s)|la lámpara","ausländisch (adj)|extranjero","das Wetter/die Wetter (s)|el tiempo/clima","gewinnen (v)|ganar","mitbringen (v)|traer/acompañar","der Saft/die Säfte (s)|el zumo/jugo","witzig (adj)|divertido","wollen (v)|querer","die Großmutter/die Großmütter (s)|la abuela","bestellen (v)|encargar","das Foto/die Fotos (s)|la foto","das Reisebüro/die Reisebüros (s)|la agencia de viajes","dorther (adv)|de allí","gerade (adj)|recto","die Hausfrau/die Hausfrauen (s)|el ama de casa","der Herd/die Herde (s)|el fogón","das Papier/die Papiere (s)|el papel","der Junge/die Jungen o Jungs (s)|el chico","der Kuchen/die Kuchen (s)|la tarta","das Plus/die Plus (s)|más/diagnóstico favorable/excedente","laufen (v)|correr/andar","die Halle/die Hallen (s)|la sala/vestíbulo","der Arm/die Arme (s)|el brazo","die Hilfe/die Hilfen (s)|la ayuda","bitte|por favor","bedeuten (v)|significar/dar a entender","spät (adj)|tarde/final/último","die Birne/die Birnen (s)|la pera","gut (adj)|bueno","frühstücken (v)|desayunar","die Ehefrau/die Ehefrauen (s)|la esposa","günstig (adj)|favorable","die Aufgabe/die Aufgaben (s)|la tarea","der Reisepass/die Reisepässe (s)|el pasaporte","international (adj)|internacional","der Eingang/die Eingänge (s)|la entrada","müde (adj)|cansado","zwischen (prep)|entre/en medio de","wenig (adj)|poco/insignificante","der Raum/die Räume (s)|la habitación","können (v)|poder","das Jahr/die Jahre (s)|el año","die Stunde/die Stunden (s)|la hora/cita","die Achtung/die Achtungen (s)|el respeto/atención","der Unterricht/die Unterrichte (s)|la enseñanza","der Dank/die Danke (s)|el agradecimiento","gelb (adj)|amarillo","der Fußball/die Fußbälle (s)|el fútbol","die Busfahrt/die Busfahrten (s)|el viaje en autobús","kümmern (v)|ocupar/cuidar/preocuparse","die Sonne/die Sonnen (s)|el sol","hören (v)|escuchar","beginnen (v)|comenzar","nur (adv) (partícula modal)|sólo (adv) sólamente/nada más que (partícula modal)","hoch (adj)|alto","das Bild/die Bilder (s)|la imagen","der Test/die Tests o Teste (s)|la prueba","der Sommer/die Sommer (s)|el verano","die Rechnung/die Rechnungen (s)|la factura/cuenta","schreiben (v)|escribir","stehen (v)|estar de pie","sprechen (v)|hablar","die Miete/die Mieten (s)|el alquiler","männlich (adj)|masculino","der Fernseher/die Fernseher (s)|la televisión","das Obst (s)|la fruta","der Großvater/die Großväter (s)|el abuelo","der Flug/die Flüge (s)|el vuelo","benutzen (v)|utilizar","der Bekannte/die Bekannten (s)|el conocido","die Bekannte/die Bekannten (s)|la conocida","hallo (interjección)|hola","abfliegen (v)|despegar","der Koffer/die Koffer (s)|la maleta","der Kühlschrank/die Kühlschränke (s)|la nevera","studieren (v)|estudiar","baden (v)|bañar","Sie (pron)|usted","die Arbeit/die Arbeiten (s)|el trabajo","empfehlen (v)|recomendar","ohne (prep)|sin","der Regen/die Regen (s)|la lluvia","die Nummer/die Nummern (s)|el número","der Job/die Jobs (s)|el trabajo","buchstabieren (v)|deletrear","verheiraten(adj)|casar","der Hals/die Hälse (s)|el cuello","der Kilometer/die Kilometer (s)|el kilómetro","die Giraffe/die Giraffen (s)|la jirafa","das Baby/die Babys (s)|el bebé","oder (conj)|o","der Student/die Studenten (s)|el estudiante","die Studentin/die Studentinnen (s)|la estudiante"
+];
+
+const WORDS = RAW.map((r,i)=>{
+  const [de,es] = r.split("|");
+  // extract part-of-speech tag from the German entry
+  let pos = "";
+  const m = de.match(/\(([^)]*(v|s|adj|adv|pron|conj|prep|interjección|partícula[^)]*)[^)]*)\)/);
+  if(m) pos = m[1].replace(/\s+/g,' ').trim();
+  return {n:i+1, de:de.trim(), es:es.trim(), pos};
+});
+
+/* ===== STATE ===== */
+let cfg = {dir:"de-es", count:10, range:"all"};
+// each deck entry: {word, options:[...], correct, picked:null}
+let deck=[], idx=0, isReview=false;
+
+/* ===== PERSISTENT MISTAKES ===== */
+const STORE_KEY = "wortspiel_errores_v1";
+function loadMistakes(){
+  try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
+  catch(e){ return []; }
+}
+function saveMistakes(arr){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(arr)); }catch(e){}
+}
+function addMistake(n){
+  const m = loadMistakes();
+  if(!m.includes(n)){ m.push(n); saveMistakes(m); }
+}
+function removeMistake(n){
+  saveMistakes(loadMistakes().filter(x=>x!==n));
+}
+
+/* ===== HELPERS ===== */
+const $ = s=>document.querySelector(s);
+const shuffle = a=>{for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
+function cleanDe(de){ return de.replace(/\s*\([^)]*\)\s*/g,'').trim(); }
+
+/* ===== SETUP UI ===== */
+function buildRanges(){
+  const grid = $("#range");
+  const total = WORDS.length;
+  const ranges = [{key:"all",label:"Todas",sub:"1–"+total}];
+  for(let s=1; s<=total; s+=100){
+    const e = Math.min(s+99,total);
+    ranges.push({key:s+"-"+e,label:s+"–"+e,sub:(e-s+1)+" palabras"});
+  }
+  grid.innerHTML = ranges.map((r,i)=>
+    `<button class="chip ${i===0?'active':''}" data-range="${r.key}">${r.label}<small>${r.sub}</small></button>`
+  ).join("");
+}
+
+function wireChips(containerId, key){
+  document.querySelectorAll("#"+containerId+" .chip").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      document.querySelectorAll("#"+containerId+" .chip").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      const d = btn.dataset;
+      if(key==="dir") cfg.dir = d.dir;
+      if(key==="count") cfg.count = +d.count;
+      if(key==="range") cfg.range = d.range;
+    });
+  });
+}
+
+function refreshReviewBox(){
+  const m = loadMistakes();
+  const box = $("#reviewBox");
+  if(m.length===0){ box.classList.add("hidden"); return; }
+  box.classList.remove("hidden");
+  $("#reviewCount").textContent = m.length;
+}
+
+/* ===== POOL & DECK BUILD ===== */
+function poolForRange(){
+  if(cfg.range==="all") return WORDS.slice();
+  const [s,e] = cfg.range.split("-").map(Number);
+  return WORDS.filter(w=>w.n>=s && w.n<=e);
+}
+
+function buildEntry(word, pool){
+  const askDe = cfg.dir==="de-es";
+  const correct = askDe ? word.es : cleanDe(word.de);
+  const others = shuffle(pool.filter(w=>w.n!==word.n))
+      .map(w=> askDe ? w.es : cleanDe(w.de))
+      .filter(t=>t!==correct);
+  const uniq = [];
+  for(const o of others){ if(!uniq.includes(o)) uniq.push(o); if(uniq.length>=3) break; }
+  const options = shuffle([correct, ...uniq]);
+  return {word, options, correct, picked:null};
+}
+
+/* ===== START MODES ===== */
+function startGame(){
+  isReview=false;
+  const pool = poolForRange();
+  const n = Math.min(cfg.count, pool.length);
+  const chosen = shuffle(pool.slice()).slice(0,n);
+  deck = chosen.map(w=>buildEntry(w, pool));
+  beginDeck();
+}
+
+function startReview(nums){
+  isReview=true;
+  const pool = WORDS.slice(); // distractors from full list
+  const chosen = WORDS.filter(w=>nums.includes(w.n));
+  if(chosen.length===0) return;
+  deck = shuffle(chosen.map(w=>buildEntry(w, pool)));
+  beginDeck();
+}
+
+function beginDeck(){
+  idx=0;
+  $("#setup").classList.add("hidden");
+  $("#results").classList.add("hidden");
+  $("#game").classList.remove("hidden");
+  $("#modeTag").textContent = isReview ? "Modo repaso" : "Práctica";
+  renderQuestion();
+}
+
+/* ===== RENDER ===== */
+function computeScore(){
+  let score=0, streak=0, best=0, correct=0, wrong=0;
+  for(const e of deck){
+    if(e.picked===null) continue;
+    if(e.picked===e.correct){ score += 10 + streak*2; streak++; best=Math.max(best,streak); correct++; }
+    else { streak=0; wrong++; }
+  }
+  return {score, best, correct, wrong, streak};
+}
+
+function renderDots(){
+  const wrap = $("#dots");
+  wrap.innerHTML = deck.map((e,i)=>{
+    let cls="dot";
+    if(e.picked!==null) cls += (e.picked===e.correct?" correct":" wrong");
+    if(i===idx) cls += " current";
+    return `<button class="${cls}" data-i="${i}" title="Pregunta ${i+1}"></button>`;
+  }).join("");
+  Array.from(wrap.children).forEach(d=>{
+    d.addEventListener("click",()=>{ idx=+d.dataset.i; renderQuestion(); });
+  });
+}
+
+function renderQuestion(){
+  const e = deck[idx];
+  const q = e.word;
+  const askDe = cfg.dir==="de-es";
+  const answered = e.picked!==null;
+
+  $("#promptTag").textContent = askDe ? "¿Qué significa en español?" : "¿Cómo se dice en alemán?";
+  $("#promptWord").textContent = askDe ? cleanDe(q.de) : q.es;
+
+  const posEl = $("#promptPos");
+  if(askDe && q.pos){ posEl.textContent = q.pos; posEl.classList.remove("hidden"); }
+  else posEl.classList.add("hidden");
+
+  const wrap = $("#answers");
+  wrap.innerHTML = e.options.map(o=>`<button class="ans">${o}</button>`).join("");
+  Array.from(wrap.children).forEach(btn=>{
+    const txt = btn.textContent;
+    if(answered){
+      btn.disabled = true;
+      if(txt===e.correct){ btn.classList.add("correct"); btn.innerHTML += '<span class="mark">✓</span>'; }
+      else if(txt===e.picked){ btn.classList.add("wrong"); btn.innerHTML += '<span class="mark">✗</span>'; }
+    }else{
+      btn.addEventListener("click",()=>choose(txt));
+    }
+  });
+
+  // feedback (persisted view)
+  const fb = $("#feedback");
+  if(answered){
+    if(e.picked===e.correct){ fb.className="feedback ok"; fb.textContent="¡Correcto!"; }
+    else { fb.className="feedback no"; fb.innerHTML="Incorrecto <span class='correctword'>La respuesta era: "+e.correct+"</span>"; }
+    fb.classList.remove("hidden");
+  }else{
+    fb.classList.add("hidden");
+  }
+
+  updateHud();
+  renderDots();
+  updateNav();
+}
+
+function updateHud(){
+  const s = computeScore();
+  $("#hudScore").textContent = s.score;
+  $("#hudStreak").textContent = s.streak;
+  $("#hudProg").textContent = (idx+1)+" / "+deck.length;
+  const done = deck.filter(e=>e.picked!==null).length;
+  $("#progFill").style.width = (done/deck.length*100)+"%";
+}
+
+function updateNav(){
+  $("#prevBtn").disabled = (idx===0);
+  const nb = $("#nextBtn");
+  const allDone = deck.every(e=>e.picked!==null);
+  if(idx+1>=deck.length){
+    nb.textContent = allDone ? "Ver resultados →" : "Siguiente →";
+  }else{
+    nb.textContent = "Siguiente →";
+  }
+}
+
+function choose(picked){
+  const e = deck[idx];
+  if(e.picked!==null) return;
+  e.picked = picked;
+  // track mistakes persistently
+  if(picked!==e.correct) addMistake(e.word.n);
+  else if(isReview) removeMistake(e.word.n); // acertaste en repaso -> ya no es error
+  renderQuestion();
+}
+
+function goPrev(){ if(idx>0){ idx--; renderQuestion(); } }
+function goNext(){
+  if(idx+1<deck.length){ idx++; renderQuestion(); }
+  else if(deck.every(e=>e.picked!==null)){ showResults(); }
+  else { // jump to first unanswered
+    const next = deck.findIndex(e=>e.picked===null);
+    idx = next>=0 ? next : idx;
+    renderQuestion();
+  }
+}
+
+function exitToMenu(){
+  $("#game").classList.add("hidden");
+  $("#results").classList.add("hidden");
+  $("#setup").classList.remove("hidden");
+  refreshReviewBox();
+}
+
+function showResults(){
+  $("#game").classList.add("hidden");
+  $("#results").classList.remove("hidden");
+  const total = deck.length;
+  const s = computeScore();
+  const pct = Math.round(s.correct/total*100);
+  $("#resCorrect").textContent = s.correct;
+  $("#resTotal").textContent = total;
+  $("#resPct").textContent = pct+"% de aciertos · "+s.score+" puntos";
+  $("#msCorrect").textContent = s.correct;
+  $("#msWrong").textContent = s.wrong;
+  $("#msStreak").textContent = s.best;
+
+  // mistakes from THIS round still wrong
+  const roundWrong = deck.filter(e=>e.picked!==null && e.picked!==e.correct).map(e=>e.word.n);
+  const rb = $("#resReviewBtn");
+  if(roundWrong.length>0){
+    rb.classList.remove("hidden");
+    rb.textContent = "Repasar los "+roundWrong.length+" errores de esta partida";
+    rb.onclick = ()=>startReview(roundWrong);
+  }else{
+    rb.classList.add("hidden");
+  }
+
+  let trophy, title, grade;
+  if(pct===100){ trophy="🏆"; title="¡Perfecto!"; grade="Dominas estas palabras. Sehr gut!"; }
+  else if(pct>=80){ trophy="🌟"; title="¡Muy bien!"; grade="Casi perfecto, sigue así."; }
+  else if(pct>=60){ trophy="👍"; title="¡Buen trabajo!"; grade="Vas por buen camino."; }
+  else if(pct>=40){ trophy="📚"; title="A seguir practicando"; grade="Repasa tus errores otra vez."; }
+  else { trophy="💪"; title="No te rindas"; grade="La repetición es la clave. ¡Otra vuelta!"; }
+  $("#trophy").textContent=trophy;
+  $("#resTitle").textContent=title;
+  $("#resGrade").textContent=grade;
+}
+
+/* ===== INIT ===== */
+buildRanges();
+wireChips("dir","dir");
+wireChips("count","count");
+wireChips("range","range");
+refreshReviewBox();
+
+$("#startBtn").addEventListener("click",startGame);
+$("#prevBtn").addEventListener("click",goPrev);
+$("#nextBtn").addEventListener("click",goNext);
+$("#exitBtn").addEventListener("click",exitToMenu);
+$("#againBtn").addEventListener("click",startGame);
+$("#menuBtn").addEventListener("click",exitToMenu);
+$("#reviewBtn").addEventListener("click",()=>startReview(loadMistakes()));
+$("#clearReview").addEventListener("click",()=>{ saveMistakes([]); refreshReviewBox(); });
+
+// keyboard: 1-4 responder, ←/→ navegar, Enter/Espacio avanzar
+document.addEventListener("keydown",e=>{
+  if($("#game").classList.contains("hidden")) return;
+  const answered = deck[idx] && deck[idx].picked!==null;
+  if(!answered && ["1","2","3","4"].includes(e.key)){
+    const b = $("#answers").children[+e.key-1];
+    if(b) b.click();
+  } else if(e.key==="ArrowLeft"){ e.preventDefault(); goPrev(); }
+  else if(e.key==="ArrowRight"){ e.preventDefault(); goNext(); }
+  else if(answered && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); goNext(); }
+});
+</script>
+</body>
+</html>
