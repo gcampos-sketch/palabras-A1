@@ -272,6 +272,16 @@
   }
   .prompt .tag{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px}
   .prompt .word{font-size:38px;font-weight:800;color:var(--accent);line-height:1.05;letter-spacing:-.01em}
+  .word-row{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+  .speak-btn{
+    flex:0 0 auto;width:42px;height:42px;border-radius:50%;border:1.5px solid var(--line);
+    background:#fff;cursor:pointer;font-size:18px;line-height:1;display:flex;align-items:center;
+    justify-content:center;transition:transform .12s,border-color .12s,background .12s;
+  }
+  .speak-btn:hover{transform:scale(1.08);border-color:var(--accent);background:#fff5f2}
+  .speak-btn:active{transform:scale(.96)}
+  .speak-btn.playing{border-color:var(--accent);background:var(--red-soft);animation:pulse .8s ease infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(200,69,47,.4)}50%{box-shadow:0 0 0 7px rgba(200,69,47,0)}}
   .prompt .pos{display:inline-block;margin-top:10px;font-size:12px;color:#8a7c60;font-style:italic;background:#f0e6cd;padding:3px 12px;border-radius:20px}
   .newbadge{display:inline-block;margin-top:10px;margin-left:6px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#2a5b7a;background:#dceaf2;padding:3px 12px;border-radius:20px}
   /* franja de stats en el menú */
@@ -416,7 +426,10 @@
 
     <div class="prompt">
       <div class="tag" id="promptTag">Traduce</div>
-      <div class="word" id="promptWord">—</div>
+      <div class="word-row">
+        <div class="word" id="promptWord">—</div>
+        <button class="speak-btn hidden" id="speakBtn" title="Escuchar en alemán" aria-label="Escuchar pronunciación">🔊</button>
+      </div>
       <span class="pos hidden" id="promptPos"></span>
       <span class="newbadge hidden" id="newBadge">palabra nueva</span>
     </div>
@@ -424,7 +437,10 @@
     <!-- FLASHCARD back (Anki) -->
     <div class="card-back hidden" id="cardBack">
       <div class="back-divider"></div>
-      <div class="back-answer" id="backAnswer">—</div>
+      <div class="word-row">
+        <div class="back-answer" id="backAnswer">—</div>
+        <button class="speak-btn hidden" id="speakBackBtn" title="Escuchar en alemán" aria-label="Escuchar pronunciación">🔊</button>
+      </div>
     </div>
 
     <!-- FLASHCARD controls -->
@@ -579,6 +595,44 @@ const shuffle = a=>{for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|
 function cleanDe(de){ return de.replace(/\s*\([^)]*\)\s*/g,'').trim(); }
 const wordByN = {}; WORDS.forEach(w=>wordByN[w.n]=w);
 
+/* ===== AUDIO (pronunciación alemana) ===== */
+const synth = window.speechSynthesis;
+let deVoice = null;
+// elegir la mejor voz alemana disponible (prioriza voces de alta calidad de Apple)
+function pickGermanVoice(){
+  if(!synth) return;
+  const voices = synth.getVoices().filter(v=> /^de(-|_)/i.test(v.lang) || /german|deutsch/i.test(v.name));
+  if(!voices.length){ deVoice=null; return; }
+  // preferencias de calidad (nombres comunes de voces naturales en macOS/iOS)
+  const prefer = ["Anna (Premium)","Petra (Premium)","Markus (Premium)","Anna (Enhanced)","Petra (Enhanced)","Markus (Enhanced)","Anna","Petra","Markus","Helena","Yannick"];
+  for(const name of prefer){
+    const hit = voices.find(v=> v.name===name || v.name.startsWith(name));
+    if(hit){ deVoice = hit; return; }
+  }
+  // si no, cualquiera marcada como local (suele sonar mejor que las remotas)
+  deVoice = voices.find(v=>v.localService) || voices[0];
+}
+if(synth){
+  pickGermanVoice();
+  // las voces cargan async en algunos navegadores
+  synth.onvoiceschanged = pickGermanVoice;
+}
+function speakDe(text){
+  if(!synth){ return; }
+  try{
+    synth.cancel(); // corta lo anterior para que no se encimen
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "de-DE";
+    if(deVoice) u.voice = deVoice;
+    u.rate = 0.92;  // un pelín más lento = más claro
+    u.pitch = 1.0;
+    const btns = [$("#speakBtn"), $("#speakBackBtn")].filter(b=>b && !b.classList.contains("hidden"));
+    u.onstart = ()=> btns.forEach(b=>b.classList.add("playing"));
+    u.onend = u.onerror = ()=> btns.forEach(b=>b.classList.remove("playing"));
+    synth.speak(u);
+  }catch(e){}
+}
+
 /* ===== POOL ===== */
 function allPool(){ return WORDS.slice(); }
 
@@ -665,6 +719,12 @@ function renderCard(){
 
   $("#backAnswer").textContent = askDe ? q.es : cleanDe(q.de);
 
+  // botón de audio: siempre habla la palabra EN ALEMÁN
+  const deText = cleanDe(q.de);
+  // frente: solo si la palabra mostrada es la alemana (modo de-es)
+  $("#speakBtn").classList.toggle("hidden", !askDe);
+  $("#speakBtn").onclick = ()=>speakDe(deText);
+
   if(current.revealed){
     $("#cardBack").classList.remove("hidden");
     $("#revealBtn").classList.add("hidden");
@@ -673,6 +733,11 @@ function renderCard(){
     $("#iHard").textContent  = previewInterval(q.n,"hard");
     $("#iGood").textContent  = previewInterval(q.n,"good");
     $("#iEasy").textContent  = previewInterval(q.n,"easy");
+    // reverso: si el alemán está al dorso (modo es-de)
+    $("#speakBackBtn").classList.toggle("hidden", askDe);
+    $("#speakBackBtn").onclick = ()=>speakDe(deText);
+    // al revelar, reproduce automáticamente la pronunciación alemana
+    speakDe(deText);
   }
   updateHud();
 }
@@ -704,6 +769,8 @@ function showAllDone(){
   $("#rateRow").classList.add("hidden");
   $("#revealBtn").classList.add("hidden");
   $("#newBadge").classList.add("hidden");
+  $("#speakBtn").classList.add("hidden");
+  $("#speakBackBtn").classList.add("hidden");
   $("#promptWord").textContent = "—";
   $("#promptTag").textContent = "Sesión";
   $("#promptPos").classList.add("hidden");
@@ -839,10 +906,11 @@ $("#clearAll").addEventListener("click",()=>{
   }
 });
 
-// teclado: Espacio/Enter revela; 1-4 = Otra vez/Difícil/Bien/Fácil
+// teclado: Espacio/Enter revela; 1-4 = Otra vez/Difícil/Bien/Fácil; P = escuchar
 document.addEventListener("keydown",e=>{
   if($("#game").classList.contains("hidden")) return;
   if(!current) return;
+  if((e.key==="p"||e.key==="P")){ e.preventDefault(); speakDe(cleanDe(current.word.de)); return; }
   if(!current.revealed && (e.key===" "||e.key==="Enter")){ e.preventDefault(); revealCard(); return; }
   if(current.revealed && ["1","2","3","4"].includes(e.key)){
     const map = {"1":"again","2":"hard","3":"good","4":"easy"};
