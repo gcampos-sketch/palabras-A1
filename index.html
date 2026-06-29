@@ -284,6 +284,12 @@
   @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(200,69,47,.4)}50%{box-shadow:0 0 0 7px rgba(200,69,47,0)}}
   .prompt .pos{display:inline-block;margin-top:10px;font-size:12px;color:#8a7c60;font-style:italic;background:#f0e6cd;padding:3px 12px;border-radius:20px}
   .newbadge{display:inline-block;margin-top:10px;margin-left:6px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#2a5b7a;background:#dceaf2;padding:3px 12px;border-radius:20px}
+  .aheadbadge{display:inline-block;margin-top:10px;margin-left:6px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a9750f;background:#fbf0d6;padding:3px 12px;border-radius:20px}
+  /* barra de meta hacia 723 aprendidas */
+  .goalbar{margin:0 0 20px;position:relative;z-index:1}
+  .goalbar-track{height:8px;background:#e8dcc1;border-radius:8px;overflow:hidden}
+  .goalbar-track i{display:block;height:100%;width:0;border-radius:8px;background:linear-gradient(90deg,var(--green),#5fa873);transition:width .4s ease}
+  .goalbar-label{text-align:center;font-size:11px;font-weight:700;letter-spacing:.04em;color:#7a6e57;margin-top:6px}
   /* franja de stats en el menú */
   .stat-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 22px;position:relative;z-index:1}
   .stat-strip .ss{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 8px;text-align:center}
@@ -424,6 +430,11 @@
       <div class="stat streak"><div class="num" id="hudDue">0</div><div class="lab">En cola</div></div>
     </div>
 
+    <div class="goalbar">
+      <div class="goalbar-track"><i id="goalFill"></i></div>
+      <div class="goalbar-label"><span id="goalText">0 / 723 aprendidas</span></div>
+    </div>
+
     <div class="prompt">
       <div class="tag" id="promptTag">Traduce</div>
       <div class="word-row">
@@ -432,6 +443,7 @@
       </div>
       <span class="pos hidden" id="promptPos"></span>
       <span class="newbadge hidden" id="newBadge">palabra nueva</span>
+      <span class="aheadbadge hidden" id="aheadBadge">repaso adelantado</span>
     </div>
 
     <!-- FLASHCARD back (Anki) -->
@@ -454,10 +466,10 @@
 
     <!-- estado cuando no hay nada pendiente -->
     <div class="all-done hidden" id="allDone">
-      <div class="ad-emoji">✅</div>
-      <div class="ad-title">¡Todo al día!</div>
-      <div class="ad-text" id="adText">No hay palabras pendientes ahora mismo. Vuelve más tarde o sigue con palabras nuevas.</div>
-      <button class="reveal-btn" id="moreNewBtn">Ver más palabras nuevas</button>
+      <div class="ad-emoji" id="adEmoji">🏆</div>
+      <div class="ad-title" id="adTitle">¡Vocabulario completado!</div>
+      <div class="ad-text" id="adText"></div>
+      <button class="reveal-btn hidden" id="moreNewBtn">Ver más palabras nuevas</button>
     </div>
   </section>
 
@@ -661,8 +673,11 @@ function refreshStats(){
 }
 
 /* ===== MOTOR: elegir la próxima palabra ===== */
-// prioridad: 1) la más vencida (due más antiguo) entre las introducidas
-//            2) una palabra nueva del rango elegido
+// objetivo: llegar a 723 aprendidas. Nunca termina hasta lograrlo.
+// prioridad: 1) la más vencida entre las introducidas
+//            2) una palabra nueva (en orden de lista)
+//            3) si no hay vencidas ni nuevas pero AÚN faltan por aprender:
+//               la menos afianzada (para seguir avanzando sin frenar)
 function pickNext(){
   const s = loadSched();
   const now = Date.now();
@@ -674,12 +689,20 @@ function pickNext(){
   if(due.length){
     return {word: wordByN[due[0]], revealed:false, isNew:false};
   }
-  // 2) palabra nueva del rango (en orden de lista para "aprender completas")
+  // 2) palabra nueva (en orden de lista para "aprender completas")
   const fresh = allPool().filter(w=> !(w.n in s));
   if(fresh.length){
     return {word: fresh[0], revealed:false, isNew:true};
   }
-  return null; // nada pendiente ni nuevo
+  // 3) ya viste todas, pero faltan por AFIANZAR: la menos aprendida primero
+  const notLearned = Object.keys(s)
+    .filter(n=> !isLearned(s[n]))
+    .map(Number)
+    .sort((a,b)=> s[a].due - s[b].due);
+  if(notLearned.length){
+    return {word: wordByN[notLearned[0]], revealed:false, isNew:false, ahead:true};
+  }
+  return null; // ¡las 723 están aprendidas!
 }
 
 /* ===== FLUJO ===== */
@@ -716,6 +739,7 @@ function renderCard(){
   else posEl.classList.add("hidden");
 
   $("#newBadge").classList.toggle("hidden", !current.isNew);
+  $("#aheadBadge").classList.toggle("hidden", !current.ahead);
 
   $("#backAnswer").textContent = askDe ? q.es : cleanDe(q.de);
 
@@ -759,9 +783,13 @@ function rateCard(rating){
 }
 
 function updateHud(){
-  $("#hudLearned").textContent = learnedCount();
+  const learned = learnedCount();
+  $("#hudLearned").textContent = learned;
   $("#hudSession").textContent = sessionSeen.size;
   $("#hudDue").textContent = dueList().length;
+  const pct = Math.round(learned/WORDS.length*100);
+  $("#goalFill").style.width = pct+"%";
+  $("#goalText").textContent = learned+" / "+WORDS.length+" aprendidas · "+pct+"%";
 }
 
 function showAllDone(){
@@ -771,26 +799,16 @@ function showAllDone(){
   $("#newBadge").classList.add("hidden");
   $("#speakBtn").classList.add("hidden");
   $("#speakBackBtn").classList.add("hidden");
-  $("#promptWord").textContent = "—";
-  $("#promptTag").textContent = "Sesión";
+  $("#promptWord").textContent = "🎉";
+  $("#promptTag").textContent = "¡Felicidades!";
   $("#promptPos").classList.add("hidden");
   $("#allDone").classList.remove("hidden");
 
-  const newLeft = newRemaining();
-  const due = dueList().length;
-  const txt = $("#adText");
-  const moreBtn = $("#moreNewBtn");
-  if(newLeft>0){
-    txt.textContent = "No hay repasos pendientes ahora. Te quedan "+newLeft+" palabras nuevas por aprender.";
-    moreBtn.classList.remove("hidden");
-    moreBtn.textContent = "Aprender una palabra nueva";
-  }else if(due>0){
-    txt.textContent = "Vuelve en un momento: hay "+due+" palabras a punto de tocar.";
-    moreBtn.classList.add("hidden");
-  }else{
-    txt.textContent = "¡Repasaste todo el vocabulario! Vuelve más tarde para los próximos repasos.";
-    moreBtn.classList.add("hidden");
-  }
+  // este estado SOLO ocurre cuando las 723 están aprendidas
+  $("#adEmoji").textContent = "🏆";
+  $("#adTitle").textContent = "¡Vocabulario completado!";
+  $("#adText").textContent = "Aprendiste las "+WORDS.length+" palabras del A1. Seguirán volviendo de vez en cuando para que no se te olviden.";
+  $("#moreNewBtn").classList.add("hidden");
   updateHud();
 }
 
