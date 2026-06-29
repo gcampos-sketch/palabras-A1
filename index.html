@@ -495,6 +495,8 @@ const WORDS = RAW.map((r,i)=>{
 let cfg = {dir:"de-es"};
 let current = null;      // {word, revealed}
 let sessionSeen = new Set(); // palabras vistas en esta sesión (para "Vistas hoy")
+let recentQueue = [];    // últimas palabras mostradas, para no repetir de inmediato
+const RECENT_GAP = 5;    // cuántas otras tarjetas deben pasar antes de repetir una
 
 /* ===== SETTINGS (recordar ajustes) ===== */
 const CFG_KEY = "wortspiel_cfg_v2";
@@ -674,39 +676,58 @@ function refreshStats(){
 
 /* ===== MOTOR: elegir la próxima palabra ===== */
 // objetivo: llegar a 723 aprendidas. Nunca termina hasta lograrlo.
-// prioridad: 1) la más vencida entre las introducidas
-//            2) una palabra nueva (en orden de lista)
-//            3) si no hay vencidas ni nuevas pero AÚN faltan por aprender:
-//               la menos afianzada (para seguir avanzando sin frenar)
+// prioridad: 1) vencidas  2) nuevas  3) las menos afianzadas (adelantadas)
+// Anti-loop: una palabra no se repite hasta que pasen RECENT_GAP tarjetas.
+function notRecent(n){ return !recentQueue.includes(n); }
+// de una lista de candidatos (ya ordenada por prioridad), elige el mejor
+// que no esté en el buffer reciente; si todos están, toma el menos reciente.
+function chooseAvoidingRecent(cands){
+  if(!cands.length) return null;
+  const fresh = cands.filter(notRecent);
+  if(fresh.length) return fresh[0];
+  // todos fueron vistos hace poco: elige el que salió hace MÁS tiempo
+  let best = cands[0], bestPos = recentQueue.indexOf(cands[0]);
+  for(const n of cands){
+    const pos = recentQueue.indexOf(n); // menor índice = más antiguo
+    if(pos < bestPos){ bestPos = pos; best = n; }
+  }
+  return best;
+}
+function markShown(n){
+  recentQueue.push(n);
+  if(recentQueue.length > RECENT_GAP) recentQueue.shift();
+}
+
 function pickNext(){
   const s = loadSched();
   const now = Date.now();
+
   // 1) pendientes vencidas, la más atrasada primero
   const due = Object.keys(s)
     .filter(n=> s[n].due <= now)
     .map(Number)
     .sort((a,b)=> s[a].due - s[b].due);
-  if(due.length){
-    return {word: wordByN[due[0]], revealed:false, isNew:false};
-  }
+  let pick = chooseAvoidingRecent(due);
+  if(pick!=null){ markShown(pick); return {word: wordByN[pick], revealed:false, isNew:false}; }
+
   // 2) palabra nueva (en orden de lista para "aprender completas")
   const fresh = allPool().filter(w=> !(w.n in s));
-  if(fresh.length){
-    return {word: fresh[0], revealed:false, isNew:true};
-  }
-  // 3) ya viste todas, pero faltan por AFIANZAR: la menos aprendida primero
+  if(fresh.length){ markShown(fresh[0].n); return {word: fresh[0], revealed:false, isNew:true}; }
+
+  // 3) ya viste todas, pero faltan por AFIANZAR: la menos aprendida, sin repetir seguido
   const notLearned = Object.keys(s)
     .filter(n=> !isLearned(s[n]))
     .map(Number)
     .sort((a,b)=> s[a].due - s[b].due);
-  if(notLearned.length){
-    return {word: wordByN[notLearned[0]], revealed:false, isNew:false, ahead:true};
-  }
+  pick = chooseAvoidingRecent(notLearned);
+  if(pick!=null){ markShown(pick); return {word: wordByN[pick], revealed:false, isNew:false, ahead:true}; }
+
   return null; // ¡las 723 están aprendidas!
 }
 
 /* ===== FLUJO ===== */
 function startStudy(){
+  recentQueue = [];
   $("#setup").classList.add("hidden");
   $("#game").classList.remove("hidden");
   $("#modeTag").textContent = "Estudio continuo";
